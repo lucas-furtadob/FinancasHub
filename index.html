@@ -1,14 +1,1156 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FinanceHub | Gestão Financeira Inteligente</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Mono:wght@500;600&display=swap" rel="stylesheet">
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <button class="sidebar-toggle" onclick="toggleSidebar()">
+            <i data-lucide="chevron-left" id="toggle-icon"></i>
+        </button>
+        <div class="logo-container">
+            <span class="logo-text">HUB</span>
+            <span class="logo-short">H</span>
+        </div>
+        <div class="user-profile">
+            <div class="avatar"></div>
+            <div class="user-info">
+                <span class="user-name">Lucas Furtado</span>
+                <span class="user-email">lucas@email.com</span>
+            </div>
+        </div>
+        <nav class="nav-menu">
+            <div class="nav-label">MENU</div>
+            <a href="#" class="nav-item">
+                <i data-lucide="layout-dashboard"></i>
+                <span class="nav-text">Visão Geral</span>
+            </a>
+            <a href="#" class="nav-item active">
+                <i data-lucide="arrow-right-left"></i>
+                <span class="nav-text">Lançamentos</span>
+            </a>
+            <div class="nav-group">
+                <div class="nav-item" onclick="toggleSubmenu('submenu-agenda')">
+                    <i data-lucide="calendar-range"></i>
+                    <span class="nav-text">Agenda Financeira</span>
+                    <i data-lucide="chevron-down" class="chevron"></i>
+                </div>
+                <div class="submenu-wrapper" id="submenu-agenda">
+                    <div class="submenu-item">Contas a pagar</div>
+                    <div class="submenu-item">Contas a receber</div>
+                </div>
+            </div>
+            <a href="contas.html" class="nav-item">
+                <i data-lucide="wallet"></i>
+                <span class="nav-text">Contas financeiras</span>
+            </a>
+            <a href="cartoes.html" class="nav-item">
+                <i data-lucide="credit-card"></i>
+                <span class="nav-text">Cartão de crédito</span>
+            </a>
+            <div class="nav-group">
+                <div class="nav-item" onclick="toggleSubmenu('submenu-planejamento')">
+                    <i data-lucide="briefcase"></i>
+                    <span class="nav-text">Planejamento</span>
+                    <i data-lucide="chevron-down" class="chevron"></i>
+                </div>
+                <div class="submenu-wrapper" id="submenu-planejamento">
+                    <div class="submenu-item">Objetivos</div>
+                    <a href="orcamento.html" class="submenu-item">Orçamento Mensal</a>
+                </div>
+            </div>
+            <a href="#" class="nav-item">
+                <i data-lucide="bar-chart-3"></i>
+                <span class="nav-text">Relatórios</span>
+            </a>
+            <div class="nav-group">
+                <div class="nav-item" onclick="toggleSubmenu('submenu-cadastros')">
+                    <i data-lucide="layout-grid"></i>
+                    <span class="nav-text">Cadastros</span>
+                    <i data-lucide="chevron-down" class="chevron"></i>
+                </div>
+                <div class="submenu-wrapper" id="submenu-cadastros">
+                    <a href="categorias.html" class="submenu-item" style="text-decoration:none; display:block;">Categorias</a>
+                    <div class="submenu-item">Tags</div>
+                </div>
+            </div>
+        </nav>
+        <div class="nav-footer">
+            <div class="nav-item" id="theme-toggle" onclick="toggleTheme()" style="cursor:pointer; margin-bottom: 8px;">
+                <i data-lucide="moon" id="theme-icon-dark"></i>
+                <i data-lucide="sun" id="theme-icon-light" class="hidden"></i>
+                <span class="nav-text" id="theme-text">Modo Escuro</span>
+            </div>
+            <div style="height: 1px; background: var(--border); margin: 8px 12px 16px;"></div>
+            <a href="#" class="nav-item"><i data-lucide="settings"></i><span class="nav-text">Configurações</span></a>
+            <a href="#" class="nav-item"><i data-lucide="help-circle"></i><span class="nav-text">Ajuda</span></a>
+            <a href="#" class="nav-item logout"><i data-lucide="log-out"></i><span class="nav-text">Sair</span></a>
+        </div>
+    </aside>
+
+    <main class="content">
+        <header class="header">
+            <div class="page-info">
+                <h1>Lançamentos</h1>
+                <p>Gerencie suas receitas e despesas</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn-outline" onclick="openImportModal()">
+                    <i data-lucide="upload"></i> Importar
+                </button>
+                <div style="position:relative;">
+                    <button class="btn-outline" onclick="toggleExportMenu(event)">
+                        <i data-lucide="download"></i> Exportar
+                    </button>
+                    <div id="export-menu" class="hidden" style="position:absolute;top:100%;right:0;background:#1F1F23;border:1px solid #2D2D30;border-radius:8px;padding:8px 0;min-width:200px;z-index:1000;box-shadow:0 10px 40px rgba(0,0,0,0.5);margin-top:8px;">
+                        <button onclick="exportData('csv')" style="width:100%;padding:12px 16px;background:transparent;border:none;color:#FFF;font-size:14px;text-align:left;cursor:pointer;display:flex;align-items:center;gap:10px;">
+                            <i data-lucide="file-spreadsheet" style="width:16px;height:16px;color:#22C55E;"></i> Exportar CSV
+                        </button>
+                        <button onclick="exportData('xls')" style="width:100%;padding:12px 16px;background:transparent;border:none;color:#FFF;font-size:14px;text-align:left;cursor:pointer;display:flex;align-items:center;gap:10px;">
+                            <i data-lucide="file-spreadsheet" style="width:16px;height:16px;color:#3B82F6;"></i> Exportar Excel
+                        </button>
+                        <button onclick="exportData('pdf')" style="width:100%;padding:12px 16px;background:transparent;border:none;color:#FFF;font-size:14px;text-align:left;cursor:pointer;display:flex;align-items:center;gap:10px;">
+                            <i data-lucide="file-text" style="width:16px;height:16px;color:#EF4444;"></i> Exportar PDF
+                        </button>
+                    </div>
+                </div>
+                <div id="month-selector-container" style="display:flex;">
+                    <button class="month-selector" id="classic-month-selector" style="background:transparent;border:1px solid var(--border);padding:10px 16px;border-radius:8px;display:flex;align-items:center;gap:12px;color:#FFF;cursor:pointer;transition:all 0.2s;">
+                        <i data-lucide="chevron-left" onclick="changeMonth(-1, event)" style="width:18px;height:18px;color:#6B6B70;"></i>
+                        <span class="current-month" id="display-month" onclick="openDatePicker()" style="font-weight:600;font-size:14px;letter-spacing:0.05em;text-transform:uppercase;">MARÇO 2026</span>
+                        <i data-lucide="chevron-right" onclick="changeMonth(1, event)" style="width:18px;height:18px;color:#6B6B70;"></i>
+                    </button>
+                    <button class="date-range-badge hidden" id="date-range-badge" style="background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);color:var(--accent);padding:10px 16px;border-radius:8px;font-weight:500;font-size:14px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all 0.2s;">
+                        <i data-lucide="calendar" style="width:18px;height:18px;" onclick="openDatePicker()"></i>
+                        <span id="date-range-text" onclick="openDatePicker()">4 mar. 26 até 31 mar. 26</span>
+                        <div style="width:24px;height:24px;background:rgba(99,102,241,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;" onclick="clearDatePicker(event)">
+                            <i data-lucide="x" style="width:14px;height:14px;"></i>
+                        </div>
+                    </button>
+                </div>
+                <button class="btn-primary" onclick="openModal()">
+                    <i data-lucide="plus"></i>
+                    Novo Lançamento
+                </button>
+            </div>
+        </header>
+
+        <!-- Cards de resumo -->
+        <div class="summary-cards">
+            <div class="card">
+                <div class="card-icon received"><i data-lucide="arrow-down"></i></div>
+                <div class="card-data">
+                    <span class="label">Recebido</span>
+                    <span class="value" id="summary-recebido">R$ 0,00</span>
+                    <div class="sub-data success" id="summary-a-receber">A Receber: + R$ 0,00</div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-icon paid"><i data-lucide="arrow-up"></i></div>
+                <div class="card-data">
+                    <span class="label">Pago</span>
+                    <span class="value" id="summary-pago">R$ 0,00</span>
+                    <div class="sub-data danger" id="summary-a-pagar">A Pagar: - R$ 0,00</div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-icon balance"><i data-lucide="wallet"></i></div>
+                <div class="card-data">
+                    <span class="label">Saldo Atual</span>
+                    <span class="value" id="summary-saldo">R$ 0,00</span>
+                    <div class="sub-data success" id="summary-projetado">Saldo Projetado: R$ 0,00</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabela de lançamentos -->
+        <section class="table-container">
+            <div class="table-toolbar">
+                <div class="search-box">
+                    <i data-lucide="search" style="width:18px;height:18px;"></i>
+                    <input type="text" id="search-input" placeholder="Buscar Lançamentos..." oninput="filterSearch(this.value)">
+                </div>
+                <div class="filters">
+                    <div class="grouping-controls" style="display:flex;align-items:center;gap:12px;">
+                        <span style="font-size:13px;color:var(--text-secondary);font-weight:600;white-space:nowrap;">Agrupar por:</span>
+                        <div class="group-wrapper" style="position:relative;">
+                            <button class="filter-btn" id="group-btn" onclick="toggleGroupPopover()" style="display:flex;align-items:center;gap:12px;min-width:180px;justify-content:space-between;background:#0A0A0B;border:none;">
+                                <div style="display:flex;align-items:center;gap:8px;">
+                                    <i data-lucide="layout-list" style="width:16px;height:16px;"></i>
+                                    <span id="group-btn-text">Sem agrupamento</span>
+                                </div>
+                                <i data-lucide="chevron-down" style="width:16px;height:16px;opacity:0.6;"></i>
+                            </button>
+                            <div class="filter-popover hidden" id="group-popover" style="position:absolute;top:calc(100% + 8px);left:0;width:220px;padding:8px;z-index:900;">
+                                <div class="group-item active" onclick="setGrouping('none', this)" style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:6px;cursor:pointer;color:#FFF;font-size:14px;transition:all 0.2s;">
+                                    <span style="display:flex;align-items:center;gap:10px;"><i data-lucide="align-justify" style="width:16px;height:16px;color:#6B6B70;"></i> Sem agrupamento</span>
+                                    <i data-lucide="check" class="group-check" style="width:16px;height:16px;color:var(--accent);"></i>
+                                </div>
+                                <div class="group-item" onclick="setGrouping('data', this)" style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:6px;cursor:pointer;color:#ADADB0;font-size:14px;transition:all 0.2s;margin-top:4px;">
+                                    <span style="display:flex;align-items:center;gap:10px;"><i data-lucide="calendar" style="width:16px;height:16px;color:#6B6B70;"></i> Data</span>
+                                    <i data-lucide="check" class="group-check hidden" style="width:16px;height:16px;color:var(--accent);"></i>
+                                </div>
+                                <div class="group-item" onclick="setGrouping('categoria', this)" style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:6px;cursor:pointer;color:#ADADB0;font-size:14px;transition:all 0.2s;margin-top:4px;">
+                                    <span style="display:flex;align-items:center;gap:10px;"><i data-lucide="tag" style="width:16px;height:16px;color:#6B6B70;"></i> Categoria</span>
+                                    <i data-lucide="check" class="group-check hidden" style="width:16px;height:16px;color:var(--accent);"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="filter-wrapper">
+                        <button class="filter-btn" id="filter-btn" onclick="toggleFilterPopover()" style="display:flex;align-items:center;gap:8px;background:#0A0A0B;border:none;position:relative;">
+                            <i data-lucide="sliders-horizontal" style="width:16px;height:16px;"></i> Filtros
+                            <span id="filter-badge" class="filter-badge hidden">0</span>
+                        </button>
+                        <!-- Popover de filtros avançados -->
+                        <div class="filter-popover hidden" id="filter-popover">
+                            <div class="filter-scroll-area">
+                                <div class="filter-field">
+                                    <div class="popover-section-header" onclick="togglePopoverSection(this)">
+                                        <label class="popover-section-label">CATEGORIA</label>
+                                        <i data-lucide="chevron-down" class="section-chevron"></i>
+                                    </div>
+                                    <div id="fp-categorias" class="popover-section-content hidden" style="background: #0A0A0B; border: 1px solid var(--border); border-radius: 8px; padding: 12px; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto;">
+                                        <!-- Categorias carregadas dinamicamente -->
+                                    </div>
+                                </div>
+                                <div class="filter-field">
+                                    <div class="popover-section-header" onclick="togglePopoverSection(this)">
+                                        <label class="popover-section-label">CONTA</label>
+                                        <i data-lucide="chevron-down" class="section-chevron"></i>
+                                    </div>
+                                    <div id="fp-contas" class="popover-section-content hidden" style="background: #0A0A0B; border: 1px solid var(--border); border-radius: 8px; padding: 12px; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto;">
+                                        <!-- Contas carregadas dinamicamente -->
+                                    </div>
+                                </div>
+                                <div class="filter-field">
+                                    <div class="popover-section-header" onclick="togglePopoverSection(this)">
+                                        <label class="popover-section-label">TAG</label>
+                                        <i data-lucide="chevron-down" class="section-chevron"></i>
+                                    </div>
+                                    <div id="fp-tags" class="popover-section-content hidden" style="background: #0A0A0B; border: 1px solid var(--border); border-radius: 8px; padding: 12px; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto;">
+                                        <!-- Tags carregadas dinamicamente -->
+                                    </div>
+                                </div>
+                                <div class="filter-field">
+                                    <div class="popover-section-header" onclick="togglePopoverSection(this)">
+                                        <label class="popover-section-label">ORIGEM</label>
+                                        <i data-lucide="chevron-down" class="section-chevron"></i>
+                                    </div>
+                                    <div class="popover-section-content hidden" style="background: #0A0A0B; border: 1px solid var(--border); border-radius: 8px; padding: 12px; flex-direction: column; gap: 8px;">
+                                        <label class="cb-filter-label"><input type="checkbox" value="receita" class="filter-orig-cb"> Entrada (Receita)</label>
+                                        <label class="cb-filter-label"><input type="checkbox" value="despesa" class="filter-orig-cb"> Saída (Despesa)</label>
+                                        <label class="cb-filter-label"><input type="checkbox" value="investimento" class="filter-orig-cb"> Investimento</label>
+                                        <label class="cb-filter-label"><input type="checkbox" value="transferencia" class="filter-orig-cb"> Transferência</label>
+                                    </div>
+                                </div>
+                                <div class="filter-field">
+                                    <div class="popover-section-header" onclick="togglePopoverSection(this)">
+                                        <label class="popover-section-label">STATUS</label>
+                                        <i data-lucide="chevron-down" class="section-chevron"></i>
+                                    </div>
+                                    <div class="popover-section-content hidden" id="fp-status" style="background: #0A0A0B; border: 1px solid var(--border); border-radius: 8px; padding: 12px; flex-direction: column; gap: 8px;">
+                                        <label class="cb-filter-label"><input type="checkbox" value="Pendente" class="filter-status-cb"> Pendente</label>
+                                        <label class="cb-filter-label"><input type="checkbox" value="Pago" class="filter-status-cb"> Pago</label>
+                                        <label class="cb-filter-label"><input type="checkbox" value="Recebido" class="filter-status-cb"> Recebido</label>
+                                        <label class="cb-filter-label"><input type="checkbox" value="Realizado" class="filter-status-cb"> Realizado</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="popover-actions">
+                                <button class="btn-popover-clear" onclick="clearFilters()">Limpar</button>
+                                <button class="btn-popover-apply" onclick="applyFilters()">Aplicar</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="filter-pills">
+                        <span class="pill active" onclick="filterByTipo(this,'todos')">Todos</span>
+                        <span class="pill" onclick="filterByTipo(this,'receita')">Receitas</span>
+                        <span class="pill" onclick="filterByTipo(this,'despesa')">Despesas</span>
+                        <span class="pill" onclick="filterByTipo(this,'investimento')">Investimentos</span>
+                        <span class="pill" onclick="filterByTipo(this,'transferencia')">Transferências</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="active-filters-tags" class="active-filters-container hidden"></div>
+
+            <table id="transactions-table" style="width:100%;border-collapse:collapse;margin-top:10px;color:#ADADB0;font-size:13px;">
+                <thead>
+                    <tr style="text-align:left;border-bottom:1px solid #1F1F23;background:#0D0E12;">
+                        <th style="padding:14px 8px 14px 20px;width:28px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;"><input type="checkbox" id="master-checkbox" onchange="selectAll(this)" style="width:15px;height:15px;accent-color:#6B6B70;opacity:0.6;cursor:pointer;"></th>
+                        <th style="padding:14px 24px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">DATA</th>
+                        <th style="padding:14px 24px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">DESCRIÇÃO</th>
+                        <th style="padding:14px 24px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">CATEGORIA</th>
+                        <th style="padding:14px 24px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">STATUS</th>
+                        <th style="padding:14px 24px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">VALOR</th>
+                        <th style="padding:14px 16px 14px 24px;text-align:left;width:120px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">AÇÕES</th>
+                    </tr>
+                </thead>
+                <tbody id="transactions-tbody"></tbody>
+            </table>
+        </section>
+    </main>
+
+    <!-- ========================= MODAL ========================= -->
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal-container">
+            <button class="modal-close" onclick="closeModal()">
+                <i data-lucide="x"></i>
+            </button>
+            <div class="modal-header">
+                <div>
+                    <h2 id="modal-title">Novo lançamento</h2>
+                    <p id="modal-desc">Preencha os campos para registrar este lançamento.</p>
+                </div>
+            </div>
+            <div class="modal-tabs">
+                <button class="tab-btn active" id="tab-despesa" onclick="switchTab('despesa',this)">Despesa</button>
+                <button class="tab-btn" id="tab-receita" onclick="switchTab('receita',this)">Receita</button>
+                <button class="tab-btn" id="tab-investimento" onclick="switchTab('investimento',this)">Investimento</button>
+                <button class="tab-btn" id="tab-transferencia" onclick="switchTab('transferencia',this)">Transferência</button>
+            </div>
+
+            <!-- ===== DESPESA ===== -->
+            <div class="modal-form tab-section" id="section-despesa">
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label>Valor <span class="req-star">*</span></label>
+                        <div class="input-currency" id="d-valor-wrap">
+                            <span class="currency-label">R$</span>
+                            <input type="text" id="d-valor" placeholder="0,00" class="input-large" oninput="maskCurrency(this)">
+                        </div>
+                    </div>
+                    <div class="form-group flex-1">
+                        <label>Conta <span class="req-star">*</span></label>
+                        <div class="select-addon" id="d-conta-wrap">
+                            <select id="d-conta">
+                                <option value="">Selecione uma conta</option>
+                                <option value="banco-brasil">Banco do Brasil — CC ••3421</option>
+                                <option value="nubank-pj">Nubank PJ — CC ••8892</option>
+                                <option value="itau-pf">Itaú PF — CC ••1203</option>
+                                <option value="caixa">Caixa Econômica — CC ••5540</option>
+                                <option value="bradesco">Bradesco Empresas — CC ••7712</option>
+                                <option value="c6">C6 Bank — CC ••4491</option>
+                            </select>
+                            <button type="button" class="addon-btn"><i data-lucide="plus"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group full-width">
+                    <label>Título <span class="req-star">*</span></label>
+                    <div class="input-text-field" id="d-titulo-wrap">
+                        <input type="text" id="d-titulo" placeholder="Ex.: Almoço com a equipe">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label>Data <span class="req-star">*</span></label>
+                        <div class="input-icon-wrapper date-wrapper" id="d-data-wrap">
+                            <div style="position:relative;width:48px;height:100%;display:flex;align-items:center;padding-left:16px;">
+                                <i data-lucide="calendar" style="cursor:pointer;flex-shrink:0;margin-left:0;"></i>
+                                <input type="date" id="d-data-native" class="date-native-overlay" onchange="setDateFromNative(this,'d-data')" style="position:absolute;left:0;top:0;width:100%;height:100%;opacity:0;cursor:pointer;padding:0;box-sizing:border-box;">
+                            </div>
+                            <input type="text" id="d-data" placeholder="DD/MM/AAAA" oninput="maskDate(this)" maxlength="10">
+                        </div>
+                    </div>
+                    <div class="form-group flex-1">
+                        <label>Categoria <span class="req-star">*</span></label>
+                        <div class="select-addon" id="d-categoria-wrap">
+                            <select id="d-categoria">
+                                <option value="">Selecione uma categoria</option>
+                                <option value="alimentacao">Alimentação</option>
+                                <option value="transporte">Transporte</option>
+                                <option value="moradia">Moradia</option>
+                                <option value="saude">Saúde</option>
+                                <option value="lazer">Lazer</option>
+                                <option value="educacao">Educação</option>
+                                <option value="marketing">Marketing</option>
+                                <option value="servicos">Serviços</option>
+                                <option value="pessoal">Pessoal</option>
+                                <option value="outros">Outros</option>
+                            </select>
+                            <button type="button" class="addon-btn"><i data-lucide="plus"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label>Forma de pagamento</label>
+                        <div class="select-custom">
+                            <select id="d-pagamento">
+                                <option value="">Selecione a forma</option>
+                                <option value="pix">Pix</option>
+                                <option value="boleto">Boleto</option>
+                                <option value="debito">Débito</option>
+                                <option value="credito">Crédito</option>
+                                <option value="dinheiro">Dinheiro</option>
+                                <option value="ted">TED / DOC</option>
+                                <option value="cheque">Cheque</option>
+                            </select>
+                            <i data-lucide="chevron-down"></i>
+                        </div>
+                    </div>
+                    <div class="form-group flex-1">
+                        <label>Tags</label>
+                        <div class="select-addon">
+                            <div class="tag-field" id="d-tags"></div>
+                            <button type="button" class="addon-btn" onclick="addTag('d-tags')"><i data-lucide="plus"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="status-row">
+                    <span class="field-label">Status</span>
+                    <div class="status-options" id="d-status">
+                        <button type="button" class="status-option active" onclick="setStatus(this,'d-status')">
+                            <i data-lucide="clock"></i><span>Pendente</span>
+                        </button>
+                        <button type="button" class="status-option" onclick="setStatus(this,'d-status')">
+                            <i data-lucide="check-circle"></i><span>Pago</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="options-toggle-container">
+                    <button type="button" class="btn-toggle" onclick="toggleAdvanced('d-adv',this)">
+                        <span>Mostrar mais opções</span><i data-lucide="chevron-down"></i>
+                    </button>
+                </div>
+                <div id="d-adv" class="advanced-section hidden">
+                    <div class="segmented-control-wrapper">
+                        <span>Lançamento</span>
+                        <div class="segmented-control">
+                            <button type="button" class="seg-btn active" onclick="setSeg(this)">Único</button>
+                            <button type="button" class="seg-btn" onclick="setSeg(this)">Parcelado</button>
+                            <button type="button" class="seg-btn" onclick="setSeg(this)">Recorrente</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label>Observações</label>
+                        <textarea id="d-obs" placeholder="Adicione observações sobre este lançamento"></textarea>
+                    </div>
+                    <div class="attachments-section">
+                        <label class="label-with-icon"><i data-lucide="paperclip"></i> Anexos</label>
+                        <div class="upload-area"><i data-lucide="upload"></i><span>Adicionar anexo</span></div>
+                        <span class="helper-text">Imagens, PDF, Word, Excel, TXT ou CSV. Máximo 10MB.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== RECEITA ===== -->
+            <div class="modal-form tab-section hidden" id="section-receita">
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label>Valor <span class="req-star">*</span></label>
+                        <div class="input-currency" id="r-valor-wrap">
+                            <span class="currency-label">R$</span>
+                            <input type="text" id="r-valor" placeholder="0,00" class="input-large" oninput="maskCurrency(this)">
+                        </div>
+                    </div>
+                    <div class="form-group flex-1">
+                        <label>Conta <span class="req-star">*</span></label>
+                        <div class="select-addon" id="r-conta-wrap">
+                            <select id="r-conta">
+                                <option value="">Selecione uma conta</option>
+                                <option value="banco-brasil">Banco do Brasil — CC ••3421</option>
+                                <option value="nubank-pj">Nubank PJ — CC ••8892</option>
+                                <option value="itau-pf">Itaú PF — CC ••1203</option>
+                                <option value="caixa">Caixa Econômica — CC ••5540</option>
+                                <option value="bradesco">Bradesco Empresas — CC ••7712</option>
+                                <option value="c6">C6 Bank — CC ••4491</option>
+                            </select>
+                            <button type="button" class="addon-btn"><i data-lucide="plus"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group full-width">
+                    <label>Título <span class="req-star">*</span></label>
+                    <div class="input-text-field" id="r-titulo-wrap">
+                        <input type="text" id="r-titulo" placeholder="Ex.: Salário do mês de março">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label>Data <span class="req-star">*</span></label>
+                        <div class="input-icon-wrapper date-wrapper" id="r-data-wrap">
+                            <div style="position:relative;width:48px;height:100%;display:flex;align-items:center;padding-left:16px;">
+                                <i data-lucide="calendar" style="cursor:pointer;flex-shrink:0;margin-left:0;"></i>
+                                <input type="date" id="r-data-native" class="date-native-overlay" onchange="setDateFromNative(this,'r-data')" style="position:absolute;left:0;top:0;width:100%;height:100%;opacity:0;cursor:pointer;padding:0;box-sizing:border-box;">
+                            </div>
+                            <input type="text" id="r-data" placeholder="DD/MM/AAAA" oninput="maskDate(this)" maxlength="10">
+                        </div>
+                    </div>
+                    <div class="form-group flex-1">
+                        <label>Categoria <span class="req-star">*</span></label>
+                        <div class="select-addon" id="r-categoria-wrap">
+                            <select id="r-categoria">
+                                <option value="">Selecione uma categoria</option>
+                                <option value="vendas">Vendas de Produtos</option>
+                                <option value="servicos">Serviços Prestados</option>
+                                <option value="royalties">Royalties</option>
+                                <option value="dividendos">Dividendos</option>
+                                <option value="alugueis">Aluguéis</option>
+                                <option value="comissoes">Comissões</option>
+                                <option value="freelance">Freelance</option>
+                                <option value="salario">Salário</option>
+                                <option value="outros">Outros</option>
+                            </select>
+                            <button type="button" class="addon-btn"><i data-lucide="plus"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label>Forma de pagamento</label>
+                        <div class="select-custom">
+                            <select id="r-pagamento">
+                                <option value="">Selecione a forma</option>
+                                <option>Pix</option><option>Boleto</option>
+                                <option>Débito</option><option>Crédito</option>
+                                <option>TED / DOC</option>
+                            </select>
+                            <i data-lucide="chevron-down"></i>
+                        </div>
+                    </div>
+                    <div class="form-group flex-1">
+                        <label>Tags</label>
+                        <div class="select-addon">
+                            <div class="tag-field" id="r-tags"></div>
+                            <button type="button" class="addon-btn" onclick="addTag('r-tags')"><i data-lucide="plus"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="status-row">
+                    <span class="field-label">Status</span>
+                    <div class="status-options" id="r-status">
+                        <button type="button" class="status-option active" onclick="setStatus(this,'r-status')">
+                            <i data-lucide="clock"></i><span>Pendente</span>
+                        </button>
+                        <button type="button" class="status-option" onclick="setStatus(this,'r-status')">
+                            <i data-lucide="check-circle"></i><span>Recebido</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="options-toggle-container">
+                    <button type="button" class="btn-toggle" onclick="toggleAdvanced('r-adv',this)">
+                        <span>Mostrar mais opções</span><i data-lucide="chevron-down"></i>
+                    </button>
+                </div>
+                <div id="r-adv" class="advanced-section hidden">
+                    <div class="segmented-control-wrapper">
+                        <span>Lançamento</span>
+                        <div class="segmented-control">
+                            <button type="button" class="seg-btn active" onclick="setSeg(this)">Único</button>
+                            <button type="button" class="seg-btn" onclick="setSeg(this)">Parcelado</button>
+                            <button type="button" class="seg-btn" onclick="setSeg(this)">Recorrente</button>
+                        </div>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Observações</label>
+                        <textarea id="r-obs" placeholder="Adicione observações sobre esta receita"></textarea>
+                    </div>
+                    <div class="attachments-section">
+                        <label class="label-with-icon"><i data-lucide="paperclip"></i> Anexos</label>
+                        <div class="upload-area"><i data-lucide="upload"></i><span>Adicionar anexo</span></div>
+                        <span class="helper-text">Imagens, PDF, Word, Excel, TXT ou CSV. Máximo 10MB.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== INVESTIMENTO ===== -->
+            <div class="modal-form tab-section hidden" id="section-investimento">
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label>Valor <span class="req-star">*</span></label>
+                        <div class="input-currency" id="i-valor-wrap">
+                            <span class="currency-label">R$</span>
+                            <input type="text" id="i-valor" placeholder="0,00" class="input-large" oninput="maskCurrency(this)">
+                        </div>
+                    </div>
+                    <div class="form-group flex-1">
+                        <label>Conta</label>
+                        <div class="select-addon">
+                            <select id="i-conta">
+                                <option value="">Sem conta vinculada</option>
+                                <option value="banco-brasil">Banco do Brasil — CC ••3421</option>
+                                <option value="nubank-pj">Nubank PJ — CC ••8892</option>
+                                <option value="itau-pf">Itaú PF — CC ••1203</option>
+                                <option value="caixa">Caixa Econômica — CC ••5540</option>
+                            </select>
+                            <button type="button" class="addon-btn"><i data-lucide="plus"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group full-width">
+                    <label>Descrição</label>
+                    <div class="input-text-field">
+                        <input type="text" id="i-desc" placeholder="Ex.: Aporte mensal na Previdência Privada">
+                    </div>
+                </div>
+                <div class="form-group full-width highlighted-field">
+                    <label class="label-with-icon">
+                        <i data-lucide="target" class="text-orange"></i>
+                        Objetivo Financeiro
+                    </label>
+                    <div class="select-custom orange-border" id="i-objetivo-wrap">
+                        <select id="i-objetivo">
+                            <option value="">Selecione o objetivo</option>
+                            <option value="reserva">Reserva de Emergência</option>
+                            <option value="aposentadoria">Aposentadoria</option>
+                            <option value="viagem">Viagem Internacional</option>
+                            <option value="imovel">Compra de imóvel</option>
+                            <option value="filhos">Educação dos filhos</option>
+                            <option value="fundo">Fundo de investimentos</option>
+                            <option value="negocio">Expansão de Negócio</option>
+                        </select>
+                        <i data-lucide="chevron-down"></i>
+                    </div>
+                    <span class="helper-text">O valor será adicionado ao progresso do objetivo.</span>
+                </div>
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label>Categoria <span class="req-star">*</span></label>
+                        <div class="select-addon" id="i-categoria-wrap">
+                            <select id="i-categoria">
+                                <option value="">Selecione uma categoria</option>
+                                <option value="renda-fixa">Renda Fixa (CDB, LCI, LCA)</option>
+                                <option value="renda-variavel">Renda Variável (Ações)</option>
+                                <option value="fundos">Fundos de Investimento</option>
+                                <option value="crypto">Criptomoedas</option>
+                                <option value="previdencia">Previdência (PGBL/VGBL)</option>
+                                <option value="imoveis">Fundos Imobiliários</option>
+                                <option value="tesouro">Tesouro Direto</option>
+                            </select>
+                            <button type="button" class="addon-btn"><i data-lucide="plus"></i></button>
+                        </div>
+                    </div>
+                    <div class="form-group flex-1">
+                        <label>Data <span class="req-star">*</span></label>
+                        <div class="input-icon-wrapper date-wrapper" id="i-data-wrap">
+                            <div style="position:relative;width:48px;height:100%;display:flex;align-items:center;padding-left:16px;">
+                                <i data-lucide="calendar" style="cursor:pointer;flex-shrink:0;margin-left:0;"></i>
+                                <input type="date" id="i-data-native" class="date-native-overlay" onchange="setDateFromNative(this,'i-data')" style="position:absolute;left:0;top:0;width:100%;height:100%;opacity:0;cursor:pointer;padding:0;box-sizing:border-box;">
+                            </div>
+                            <input type="text" id="i-data" placeholder="DD/MM/AAAA" oninput="maskDate(this)" maxlength="10">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label>Tags</label>
+                        <div class="select-addon">
+                            <div class="tag-field" id="i-tags"></div>
+                            <button type="button" class="addon-btn" onclick="addTag('i-tags')"><i data-lucide="plus"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group full-width">
+                    <label>Observações</label>
+                    <textarea id="i-obs" placeholder="Ex.: Aportes mensais até a aposentadoria"></textarea>
+                </div>
+            </div>
+
+            <!-- ===== TRANSFERÊNCIA ===== -->
+            <div class="modal-form tab-section hidden" id="section-transferencia">
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label>Conta de origem <span class="req-star">*</span></label>
+                        <div class="select-addon" id="t-origem-wrap">
+                            <select id="t-origem" onchange="updateTransferAccounts()">
+                                <option value="">Selecionar conta de origem</option>
+                                <option value="banco-brasil">Banco do Brasil — CC ••3421</option>
+                                <option value="nubank-pj">Nubank PJ — CC ••8892</option>
+                                <option value="itau-pf">Itaú PF — CC ••1203</option>
+                                <option value="caixa">Caixa Econômica — CC ••5540</option>
+                                <option value="bradesco">Bradesco Empresas — CC ••7712</option>
+                            </select>
+                            <button type="button" class="addon-btn"><i data-lucide="plus"></i></button>
+                        </div>
+                    </div>
+                    <div class="form-group flex-1">
+                        <label>Conta de destino <span class="req-star">*</span></label>
+                        <div class="select-addon" id="t-destino-wrap">
+                            <select id="t-destino" onchange="updateTransferAccounts()">
+                                <option value="">Selecionar conta de destino</option>
+                                <option value="banco-brasil">Banco do Brasil — CC ••3421</option>
+                                <option value="nubank-pj">Nubank PJ — CC ••8892</option>
+                                <option value="itau-pf">Itaú PF — CC ••1203</option>
+                                <option value="caixa">Caixa Econômica — CC ••5540</option>
+                                <option value="bradesco">Bradesco Empresas — CC ••7712</option>
+                            </select>
+                            <button type="button" class="addon-btn"><i data-lucide="plus"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label>Valor <span class="req-star">*</span></label>
+                        <div class="input-currency" id="t-valor-wrap">
+                            <span class="currency-label">R$</span>
+                            <input type="text" id="t-valor" placeholder="0,00" class="input-large" oninput="maskCurrency(this)">
+                        </div>
+                    </div>
+                    <div class="form-group flex-1">
+                        <label>Data <span class="req-star">*</span></label>
+                        <div class="input-icon-wrapper date-wrapper" id="t-data-wrap">
+                            <div style="position:relative;width:48px;height:100%;display:flex;align-items:center;padding-left:16px;">
+                                <i data-lucide="calendar" style="cursor:pointer;flex-shrink:0;margin-left:0;"></i>
+                                <input type="date" id="t-data-native" class="date-native-overlay" onchange="setDateFromNative(this,'t-data')" style="position:absolute;left:0;top:0;width:100%;height:100%;opacity:0;cursor:pointer;padding:0;box-sizing:border-box;">
+                            </div>
+                            <input type="text" id="t-data" placeholder="DD/MM/AAAA" oninput="maskDate(this)" maxlength="10">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label>Tags</label>
+                        <div class="select-addon">
+                            <div class="tag-field" id="t-tags"></div>
+                            <button type="button" class="addon-btn" onclick="addTag('t-tags')"><i data-lucide="plus"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group full-width">
+                    <label>Observação</label>
+                    <div class="input-text-field">
+                        <input type="text" id="t-obs" placeholder="Ex.: Transferência para reserva de emergência">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="modal-footer">
+                <div class="footer-btns">
+                    <button class="btn-secondary-outline" onclick="closeModal()">Cancelar</button>
+                    <button class="btn-success" id="btn-submit" onclick="submitForm()">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Confirmar Exclusão -->
+    <div class="modal-overlay" id="delete-modal-overlay">
+        <div class="modal-container confirm-modal">
+            <div style="width:56px;height:56px;background:rgba(239,68,68,0.1);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+                <i data-lucide="trash-2" style="width:26px;height:26px;color:#EF4444;"></i>
+            </div>
+            <h3>Excluir lançamento?</h3>
+            <p>Tem certeza que deseja excluir <strong id="delete-modal-title"></strong>?<br>Esta ação não poderá ser desfeita.</p>
+            <div class="confirm-modal-btns">
+                <button class="btn-secondary-outline" onclick="closeDeleteModal()">Cancelar</button>
+                <button class="btn-danger" onclick="confirmDelete()">Excluir</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Barra de Ações em Massa -->
+    <div id="bulk-action-bar" class="bulk-action-bar hidden">
+        <span id="bulk-count" style="color:#FFF;font-weight:600;font-size:14px;white-space:nowrap;">0 selecionados</span>
+        <div class="bulk-actions">
+            <button class="btn-bulk-action" onclick="bulkChangeCategory()">
+                <i data-lucide="tag" style="width:14px;height:14px;"></i> Alterar categoria
+            </button>
+            <button class="btn-bulk-action btn-bulk-danger" onclick="bulkDelete()">
+                <i data-lucide="trash-2" style="width:14px;height:14px;"></i> Excluir selecionados
+            </button>
+        </div>
+        <button class="btn-bulk-close" onclick="clearSelection()">✕</button>
+    </div>
+
+    <!-- Modal Agendamento de Período -->
+    <div class="modal-overlay" id="date-picker-modal" style="display:none;z-index:999;align-items:center;justify-content:center;position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);">
+        <div class="modal-container" style="background:#1A1A1F;padding:24px;border-radius:12px;width:100%;max-width:400px;border:1px solid #2A2A2F;position:relative;box-shadow:0 24px 48px rgba(0,0,0,0.5);">
+            <button class="modal-close" onclick="closeDatePicker()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:#6B6B70;cursor:pointer;">
+                <i data-lucide="x" style="width:20px;height:20px;"></i>
+            </button>
+            <h3 style="margin:0 0 8px 0;font-size:18px;color:#FFF;">Filtro por Período</h3>
+            <p style="margin:0 0 24px 0;font-size:14px;color:#6B6B70;">Selecione o início e o fim para exibir lançamentos dessa faixa de tempo.</p>
+            
+            <div style="display:flex;gap:16px;">
+                <div class="form-group" style="flex:1;">
+                    <label style="font-size:13px;color:#ADADB0;margin-bottom:6px;display:block;">Início</label>
+                    <input type="date" id="dp-start" style="width:100%;background:#0A0A0B;border:1px solid #2A2A2F;border-radius:8px;padding:12px;color:#FFF;font-size:14px;outline:none;" onchange="syncCalendarFromInputs()">
+                </div>
+                <div class="form-group" style="flex:1;">
+                    <label style="font-size:13px;color:#ADADB0;margin-bottom:6px;display:block;">Fim</label>
+                    <input type="date" id="dp-end" style="width:100%;background:#0A0A0B;border:1px solid #2A2A2F;border-radius:8px;padding:12px;color:#FFF;font-size:14px;outline:none;" onchange="syncCalendarFromInputs()">
+                </div>
+            </div>
+
+            <!-- Calendário Interativo -->
+            <div class="custom-calendar" id="custom-calendar-container" style="margin-top:24px;background:#0A0A0B;border:1px solid #2A2A2F;border-radius:8px;padding:16px;">
+                <div class="calendar-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                    <i data-lucide="chevron-left" style="cursor:pointer;color:#6B6B70;width:20px;height:20px;" onclick="changeCalendarMonth(-1)"></i>
+                    <span id="calendar-month-label" style="font-weight:600;color:#FFF;font-size:14px;letter-spacing:0.05em;text-transform:uppercase;"></span>
+                    <i data-lucide="chevron-right" style="cursor:pointer;color:#6B6B70;width:20px;height:20px;" onclick="changeCalendarMonth(1)"></i>
+                </div>
+                <div class="calendar-grid" style="display:grid;grid-template-columns:repeat(7, 1fr);gap:4px;text-align:center;">
+                    <div class="cal-day-name">Dom</div>
+                    <div class="cal-day-name">Seg</div>
+                    <div class="cal-day-name">Ter</div>
+                    <div class="cal-day-name">Qua</div>
+                    <div class="cal-day-name">Qui</div>
+                    <div class="cal-day-name">Sex</div>
+                    <div class="cal-day-name">Sáb</div>
+                </div>
+                <div id="calendar-days" style="display:grid;grid-template-columns:repeat(7, 1fr);grid-template-rows:repeat(6, 32px);row-gap:2px;text-align:center;margin-top:12px;min-height:202px;"></div>
+            </div>
+            
+            <div style="display:flex;gap:12px;margin-top:24px;">
+                <button type="button" style="flex:1;background:transparent;border:1px solid #2A2A2F;color:#FFF;padding:12px;border-radius:8px;cursor:pointer;font-weight:500;" onclick="clearDatePicker(event)">Limpar</button>
+                <button type="button" style="flex:1;background:var(--accent);border:none;color:#FFF;padding:12px;border-radius:8px;cursor:pointer;font-weight:600;" onclick="applyDatePicker()">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Marcar Realizado -->
+    <div class="modal-overlay" id="realize-modal" style="display:none;z-index:999;align-items:center;justify-content:center;position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);">
+        <div class="modal-container" style="background:#1A1A1F;padding:24px;border-radius:12px;width:100%;max-width:400px;border:1px solid #2A2A2F;position:relative;box-shadow:0 24px 48px rgba(0,0,0,0.5);">
+            <button class="modal-close" onclick="closeRealizeModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:#6B6B70;cursor:pointer;">
+                <i data-lucide="x" style="width:20px;height:20px;"></i>
+            </button>
+            <h3 style="margin:0 0 8px 0;font-size:18px;color:#FFF;">Marcar como Efetivado</h3>
+            <p style="margin:0 0 24px 0;font-size:14px;color:#6B6B70;">Confirme o valor e a data de efetivação do lançamento.</p>
+            
+            <div style="display:flex;flex-direction:column;gap:16px;">
+                <div class="form-group">
+                    <label style="font-size:13px;color:#ADADB0;margin-bottom:6px;display:block;">Data de Efetivação <span style="color:#EF4444">*</span></label>
+                    <input type="date" id="realize-data" style="width:100%;background:#0A0A0B;border:1px solid #2A2A2F;border-radius:8px;padding:12px;color:#FFF;font-size:14px;outline:none;">
+                </div>
+                <div class="form-group">
+                    <label style="font-size:13px;color:#ADADB0;margin-bottom:6px;display:block;">Valor <span style="color:#EF4444">*</span></label>
+                    <div style="position:relative;display:flex;align-items:center;">
+                        <span style="position:absolute;left:12px;color:#6B6B70;font-size:14px;">R$</span>
+                        <input type="text" id="realize-valor" oninput="maskCurrency(this)" style="width:100%;background:#0A0A0B;border:1px solid #2A2A2F;border-radius:8px;padding:12px 12px 12px 36px;color:#FFF;font-size:14px;outline:none;">
+                    </div>
+                </div>
+            </div>
+            
+            <div style="display:flex;gap:12px;margin-top:24px;">
+                <button type="button" style="flex:1;background:transparent;border:1px solid #2A2A2F;color:#FFF;padding:12px;border-radius:8px;cursor:pointer;font-weight:500;" onclick="closeRealizeModal()">Cancelar</button>
+                <button type="button" style="flex:1;background:var(--accent);border:none;color:#FFF;padding:12px;border-radius:8px;cursor:pointer;font-weight:600;" onclick="confirmRealize()">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast toast-hidden">
+        <i data-lucide="check-circle" style="width:18px;height:18px;flex-shrink:0;"></i>
+        <span id="toast-message">Lançamento registrado com sucesso!</span>
+    </div>
+
+    <!-- ========================= IMPORT MODAL ========================= -->
+    <div class="modal-overlay import-fullscreen" id="import-modal-overlay">
+        <div class="modal-container" style="max-width:1200px;width:95%;height:90vh;">
+            <button class="modal-close" onclick="closeImportModal()">
+                <i data-lucide="x"></i>
+            </button>
+            
+            <!-- Steps Indicator -->
+            <div style="display:flex;align-items:center;justify-content:center;gap:8px;padding:16px 24px;border-bottom:1px solid #1F1F23;">
+                <div class="import-step-indicator active" data-step="1">
+                    <span style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:var(--accent);border-radius:50%;font-size:13px;font-weight:600;">1</span>
+                    <span style="font-size:13px;color:#FFF;margin-left:8px;">Arquivo</span>
+                </div>
+                <div style="width:40px;height:2px;background:#2D2D30;" id="step-line-1"></div>
+                <div class="import-step-indicator" data-step="2">
+                    <span style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:#2D2D30;border-radius:50%;font-size:13px;font-weight:600;" id="step-num-2">2</span>
+                    <span style="font-size:13px;color:#6B6B70;margin-left:8px;" id="step-label-2">Mapeamento</span>
+                </div>
+                <div style="width:40px;height:2px;background:#2D2D30;" id="step-line-2"></div>
+                <div class="import-step-indicator" data-step="3">
+                    <span style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:#2D2D30;border-radius:50%;font-size:13px;font-weight:600;" id="step-num-3">3</span>
+                    <span style="font-size:13px;color:#6B6B70;margin-left:8px;" id="step-label-3">Revisão</span>
+                </div>
+            </div>
+            
+            <!-- Step 1: Select Account & File -->
+            <div id="import-step-1">
+                <div class="modal-header">
+                    <div>
+                        <h2>Importar Lançamentos</h2>
+                        <p>Selecione a conta/cartão e o arquivo a ser importado</p>
+                    </div>
+                </div>
+                <div class="modal-body" style="padding:24px;">
+                    <div class="form-group" style="margin-bottom:20px;">
+                        <label style="display:block;margin-bottom:8px;font-size:13px;font-weight:500;color:#ADADB0;">Conta Financeira / Cartão de Crédito <span class="req-star">*</span></label>
+                        <select id="import-conta" style="width:100%;padding:12px;background:#1F1F23;border:1px solid #2D2D30;border-radius:8px;color:#FFF;font-size:14px;" onchange="handleContaChange()">
+                            <option value="">Selecione...</option>
+                            <optgroup label="Contas Bancárias">
+                                <option value="conta-banco-brasil">Banco do Brasil — CC ••3421</option>
+                                <option value="conta-nubank-pj">Nubank PJ — CC ••8892</option>
+                                <option value="conta-itau-pf">Itaú PF — CC ••1203</option>
+                                <option value="conta-caixa">Caixa Econômica — CC ••5540</option>
+                                <option value="conta-bradesco">Bradesco Empresas — CC ••7712</option>
+                                <option value="conta-c6">C6 Bank — CC ••4491</option>
+                            </optgroup>
+                            <optgroup label="Cartões de Crédito">
+                                <option value="cartao-nubank">Nubank ••8892</option>
+                                <option value="cartao-itau">Itaú ••1203</option>
+                                <option value="cartao-bb">Banco do Brasil ••3421</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                    
+                    <div id="import-fatura-group" class="form-group hidden" style="margin-bottom:20px;">
+                        <label style="display:block;margin-bottom:8px;font-size:13px;font-weight:500;color:#ADADB0;">Fatura <span class="req-star">*</span></label>
+                        <select id="import-fatura" style="width:100%;padding:12px;background:#1F1F23;border:1px solid #2D2D30;border-radius:8px;color:#FFF;font-size:14px;">
+                            <option value="">Selecione a fatura...</option>
+                            <option value="fatura-03-2026">Março/2026</option>
+                            <option value="fatura-02-2026">Fevereiro/2026</option>
+                            <option value="fatura-01-2026">Janeiro/2026</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label style="display:block;margin-bottom:8px;font-size:13px;font-weight:500;color:#ADADB0;">Arquivo <span class="req-star">*</span></label>
+                        
+                        <!-- Template Download -->
+                        <div style="background:#1F1F23;padding:16px;border-radius:8px;margin-bottom:16px;">
+                            <div style="display:flex;align-items:center;justify-content:space-between;">
+                                <div>
+                                    <p style="font-size:13px;color:#FFF;margin:0;font-weight:500;">Modelo de arquivo CSV</p>
+                                    <p style="font-size:12px;color:#6B6B70;margin:4px 0 0 0;">Use nosso modelo para importar seus lançamentos</p>
+                                </div>
+                                <button type="button" style="display:flex;align-items:center;gap:6px;background:transparent;border:1px solid #2D2D30;color:#FFF;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:13px;" onclick="downloadTemplate()">
+                                    <i data-lucide="download" style="width:14px;height:14px;"></i>
+                                    Baixar
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- File Dropzone -->
+                        <div id="import-file-section">
+                            <label style="display:flex;align-items:center;justify-content:center;gap:12px;padding:32px;background:#0A0A0B;border:2px dashed #2D2D30;border-radius:8px;cursor:pointer;transition:all 0.2s;margin-bottom:8px;" id="import-dropzone">
+                                <i data-lucide="upload" style="width:24px;height:24px;color:#6B6B70;"></i>
+                                <span style="color:#6B6B70;">Clique ou arraste o arquivo aqui</span>
+                                <input type="file" id="import-file" accept=".csv,.ofx,.qfx" style="display:none;" onchange="handleFileSelect(this)">
+                            </label>
+                            <p style="font-size:12px;color:#6B6B70;margin:0;">CSV ou OFX/QFX - detecção automática</p>
+                        </div>
+                        
+                        <!-- File Selected -->
+                        <div id="import-file-selected" class="hidden" style="background:#1F1F23;padding:16px;border-radius:8px;margin-bottom:16px;">
+                            <div style="display:flex;align-items:center;justify-content:space-between;">
+                                <div style="display:flex;align-items:center;gap:12px;">
+                                    <i data-lucide="file-text" style="width:24px;height:24px;color:#22C55E;"></i>
+                                    <div>
+                                        <p style="font-size:13px;color:#FFF;margin:0;font-weight:500;" id="selected-file-name">arquivo.csv</p>
+                                        <p style="font-size:12px;color:#6B6B70;margin:0;" id="selected-file-size">0 bytes</p>
+                                    </div>
+                                </div>
+                                <button type="button" onclick="removeSelectedFile()" style="background:transparent;border:none;cursor:pointer;">
+                                    <i data-lucide="trash-2" style="width:18px;height:18px;color:#EF4444;"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <button type="button" id="btn-continue-file" style="width:100%;background:var(--accent);border:none;color:#FFF;padding:14px 24px;border-radius:8px;cursor:pointer;font-weight:600;font-size:14px;margin-top:8px;" onclick="continueToMapping()" disabled>Continuar</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Step Loading -->
+            <div id="import-step-loading" class="hidden">
+                <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;min-height:400px;">
+                    <div class="spinner" style="width:48px;height:48px;border:4px solid #2D2D30;border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;"></div>
+                    <p style="margin-top:24px;font-size:16px;color:#FFF;font-weight:500;">Processando arquivo...</p>
+                    <p style="margin-top:8px;font-size:14px;color:#6B6B70;">Aguarde enquanto os dados são analisados</p>
+                </div>
+            </div>
+            
+            <!-- Step 2: OFX Configuration -->
+            <div id="import-step-ofx" class="hidden">
+                <div class="modal-header">
+                    <div>
+                        <h2>Configurar Importação OFX</h2>
+                        <p>Defina a categoria e tags para os lançamentos</p>
+                    </div>
+                </div>
+                
+                <div style="padding:0 24px;">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+                        <div class="form-group">
+                            <label style="display:block;margin-bottom:8px;font-size:13px;font-weight:500;color:#ADADB0;">Categoria <span class="req-star">*</span></label>
+                            <select id="ofx-category" style="width:100%;padding:12px;background:#1F1F23;border:1px solid #2D2D30;border-radius:8px;color:#FFF;font-size:14px;" onchange="updateOFXSettings()">
+                                <option value="Importação">Importação</option>
+                                <option value="Alimentação">Alimentação</option>
+                                <option value="Transporte">Transporte</option>
+                                <option value="Moradia">Moradia</option>
+                                <option value="Saúde">Saúde</option>
+                                <option value="Lazer">Lazer</option>
+                                <option value="Educação">Educação</option>
+                                <option value="Marketing">Marketing</option>
+                                <option value="Serviços">Serviços</option>
+                                <option value="Vendas de Produtos">Vendas de Produtos</option>
+                                <option value="Transferência">Transferência</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label style="display:block;margin-bottom:8px;font-size:13px;font-weight:500;color:#ADADB0;">Tags (separadas por vírgula)</label>
+                            <input type="text" id="ofx-tags" placeholder="ex: ofx, banco" style="width:100%;padding:12px;background:#1F1F23;border:1px solid #2D2D30;border-radius:8px;color:#FFF;font-size:14px;" oninput="updateOFXSettings()">
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="padding:24px;display:flex;gap:12px;justify-content:flex-end;">
+                    <button type="button" style="background:transparent;border:1px solid #2D2D30;color:#FFF;padding:12px 24px;border-radius:8px;cursor:pointer;font-weight:500;" onclick="closeImportModal()">Cancelar</button>
+                    <button type="button" style="background:var(--accent);border:none;color:#FFF;padding:12px 24px;border-radius:8px;cursor:pointer;font-weight:600;" onclick="validateAndShowResults()">Validar e Importar</button>
+                </div>
+            </div>
+            
+            <!-- Step 2: CSV Mapping -->
+            <div id="import-step-2" class="hidden" style="max-height:80vh;overflow-y:auto;">
+                <div class="modal-header">
+                    <div>
+                        <h2>Mapear Colunas</h2>
+                        <p>Associe as colunas do arquivo aos campos do sistema</p>
+                    </div>
+                </div>
+                
+                <!-- Summary Cards -->
+                <div style="display:flex;gap:16px;padding:0 24px;margin-bottom:16px;">
+                    <div style="flex:1;background:#1F1F23;padding:12px 16px;border-radius:8px;text-align:center;">
+                        <div style="font-size:20px;font-weight:600;color:#FFF;" id="import-total-count">0</div>
+                        <div style="font-size:12px;color:#6B6B70;">Total de linhas</div>
+                    </div>
+                    <div style="flex:1;background:rgba(34,197,94,0.1);padding:12px 16px;border-radius:8px;text-align:center;">
+                        <div style="font-size:20px;font-weight:600;color:#22C55E;" id="import-total-receita">R$ 0,00</div>
+                        <div style="font-size:12px;color:#22C55E;">Receita</div>
+                    </div>
+                    <div style="flex:1;background:rgba(239,68,68,0.1);padding:12px 16px;border-radius:8px;text-align:center;">
+                        <div style="font-size:20px;font-weight:600;color:#EF4444;" id="import-total-despesa">R$ 0,00</div>
+                        <div style="font-size:12px;color:#EF4444;">Despesa</div>
+                    </div>
+                </div>
+                
+                <!-- Mapping Section -->
+                <div style="padding:0 24px;margin-bottom:12px;">
+                    <div style="background:#1F1F23;padding:12px 16px;border-radius:8px;">
+                        <h4 style="font-size:13px;font-weight:600;color:#ADADB0;margin-bottom:12px;letter-spacing:0.05em;">MAPEAMENTO DE CAMPOS</h4>
+                        <div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid #2D2D30;">
+                            <label style="display:block;margin-bottom:4px;font-size:11px;font-weight:500;color:#ADADB0;">Formato da Data no Arquivo</label>
+                            <select id="date-format-select" onchange="setDateFormat(this.value)" style="width:100%;padding:6px 8px;background:#1F1F23;border:1px solid #2D2D30;border-radius:4px;color:#FFF;font-size:12px;">
+                                <option value="dd/mm/yyyy" selected>dd/mm/aaaa (Padrão)</option>
+                                <option value="mm/dd/yyyy">mm/dd/aaaa</option>
+                                <option value="yyyy-mm-dd">aaaa-mm-dd</option>
+                                <option value="dd-mm-yyyy">dd-mm-aaaa</option>
+                                <option value="dd.mm.yyyy">dd.mm.aaaa</option>
+                            </select>
+                        </div>
+                        <div id="mapping-fields" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;"></div>
+                    </div>
+                </div>
+                
+                <!-- Bulk Edit Toggle -->
+                <div style="padding:0 24px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <i data-lucide="edit-3" style="width:16px;height:16px;color:#6B6B70;"></i>
+                        <span style="font-size:13px;color:#6B6B70;cursor:pointer;" onclick="toggleBulkEdit()">Edição em massa</span>
+                    </div>
+                    <div id="bulk-edit-toolbar" class="hidden" style="display:flex;gap:12px;align-items:center;">
+                        <select id="bulk-category" style="padding:8px;background:#1F1F23;border:1px solid #2D2D30;border-radius:6px;color:#FFF;font-size:13px;">
+                            <option value="">Alterar categoria...</option>
+                            <option value="Alimentação">Alimentação</option>
+                            <option value="Transporte">Transporte</option>
+                            <option value="Moradia">Moradia</option>
+                            <option value="Saúde">Saúde</option>
+                            <option value="Lazer">Lazer</option>
+                            <option value="Educação">Educação</option>
+                        </select>
+                        <button type="button" style="background:var(--accent);border:none;color:#FFF;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:500;" onclick="applyBulkEdit()">Aplicar</button>
+                    </div>
+                </div>
+                
+                <!-- Preview Table -->
+                <div style="padding:0 24px;max-height:400px;overflow-y:auto;">
+                    <table style="width:100%;border-collapse:collapse;font-size:13px;">
+                        <thead>
+                            <tr style="background:#0D0E12;">
+                                <th style="padding:12px 12px;text-align:left;color:#FFFFFF;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;width:40px;" id="th-checkbox">
+                                    <input type="checkbox" id="select-all-checkbox" onchange="toggleSelectAll(this.checked)" style="display:none;">
+                                </th>
+                                <th style="padding:12px 12px;text-align:left;color:#FFFFFF;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;">Data <span class="req-star">*</span></th>
+                                <th style="padding:12px 12px;text-align:left;color:#FFFFFF;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;">Título <span class="req-star">*</span></th>
+                                <th style="padding:12px 12px;text-align:left;color:#FFFFFF;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;">Categoria <span class="req-star">*</span></th>
+                                <th style="padding:12px 12px;text-align:left;color:#FFFFFF;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;">Tag</th>
+                                <th style="padding:12px 12px;text-align:left;color:#FFFFFF;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;">Forma Pgto</th>
+                                <th style="padding:12px 12px;text-align:left;color:#FFFFFF;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;">Valor <span class="req-star">*</span></th>
+                                <th style="padding:12px 12px;text-align:left;color:#FFFFFF;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;">Info</th>
+                                <th style="padding:10px 12px;text-align:center;color:#6B6B70;font-weight:500;width:40px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="import-preview-body"></tbody>
+                    </table>
+                </div>
+                
+                <div style="padding:24px;display:flex;gap:12px;justify-content:flex-end;">
+                    <button type="button" style="background:transparent;border:1px solid #2D2D30;color:#FFF;padding:12px 24px;border-radius:8px;cursor:pointer;font-weight:500;" onclick="closeImportModal()">Cancelar</button>
+                    <button type="button" id="btn-validate-import" style="background:var(--accent);border:none;color:#FFF;padding:12px 24px;border-radius:8px;cursor:pointer;font-weight:600;" onclick="validateAndShowResults()">Validar e Importar</button>
+                </div>
+            </div>
+            
+            <!-- Step 3: Results -->
+            <div id="import-step-3" class="hidden">
+                <div class="modal-header">
+                    <div>
+                        <h2>Resultado da Importação</h2>
+                        <p>Resumo do processamento</p>
+                    </div>
+                </div>
+                
+                <div style="padding:24px;">
+                    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;">
+                        <div style="background:#1F1F23;padding:20px;border-radius:12px;text-align:center;">
+                            <div style="font-size:28px;font-weight:700;color:#FFF;" id="result-total">0</div>
+                            <div style="font-size:13px;color:#6B6B70;margin-top:4px;">Total de linhas</div>
+                        </div>
+                        <div style="background:rgba(34,197,94,0.1);padding:20px;border-radius:12px;text-align:center;">
+                            <div style="font-size:28px;font-weight:700;color:#22C55E;" id="result-validos">0</div>
+                            <div style="font-size:13px;color:#22C55E;margin-top:4px;">Válidos</div>
+                        </div>
+                        <div style="background:rgba(239,68,68,0.1);padding:20px;border-radius:12px;text-align:center;">
+                            <div style="font-size:28px;font-weight:700;color:#EF4444;" id="result-erros">0</div>
+                            <div style="font-size:13px;color:#EF4444;margin-top:4px;">Com erro</div>
+                        </div>
+                        <div style="background:rgba(234,179,8,0.1);padding:20px;border-radius:12px;text-align:center;">
+                            <div style="font-size:28px;font-weight:700;color:#EAB308;" id="result-duplicados">0</div>
+                            <div style="font-size:13px;color:#EAB308;margin-top:4px;">Duplicados</div>
+                        </div>
+                    </div>
+                    
+                    <div style="display:flex;gap:24px;justify-content:center;margin-bottom:24px;">
+                        <div style="text-align:center;">
+                            <div style="font-size:18px;font-weight:600;color:#22C55E;" id="result-receita">R$ 0,00</div>
+                            <div style="font-size:13px;color:#6B6B70;">Receita</div>
+                        </div>
+                        <div style="text-align:center;">
+                            <div style="font-size:18px;font-weight:600;color:#EF4444;" id="result-despesa">R$ 0,00</div>
+                            <div style="font-size:13px;color:#6B6B70;">Despesa</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="padding:24px;display:flex;gap:12px;justify-content:flex-end;border-top:1px solid #1F1F23;">
+                    <button type="button" id="btn-conciliar" style="background:#EAB308;border:none;color:#000;padding:12px 24px;border-radius:8px;cursor:pointer;font-weight:600;opacity:0.5;cursor:not-allowed;" onclick="conciliateAndImport()" disabled>Conciliar Duplicados</button>
+                    <button type="button" style="background:transparent;border:1px solid #2D2D30;color:#FFF;padding:12px 24px;border-radius:8px;cursor:pointer;font-weight:500;" onclick="closeImportModal()">Cancelar</button>
+                    <button type="button" id="btn-importar" style="background:var(--accent);border:none;color:#FFF;padding:12px 24px;border-radius:8px;cursor:pointer;font-weight:600;" onclick="executeImport()">Confirmar Importação</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="supabase-client.js"></script>
+    <script src="theme.js"></script>
+    <script src="script.js"></script>
+</body>
 </html>
