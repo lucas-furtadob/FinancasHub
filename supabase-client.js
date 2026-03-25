@@ -11,12 +11,11 @@
  *    - SUPABASE_ANON_KEY = 'sua-chave-aqui'
  */
 
-var SUPABASE_URL = 'https://xmbuzgbdppjusxpnxxrv.supabase.co';
-var SUPABASE_ANON_KEY = 'sb_publishable_KhUp8fhPa8-ZFTEL43nIpQ_0gsHrLP6';
+var SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || '';
+var SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
-// Verifica se está configurado
-if (SUPABASE_URL === 'SUA_URL_DO_SUPABASE_AQUI') {
-    console.warn('⚠️ Supabase não configurado! Edite supabase-client.js e adicione suas credenciais.');
+if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+    console.warn('⚠️ Supabase não configurado! Configure as variáveis de ambiente VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY');
 }
 
 // Cliente Supabase (evita redeclarar se já existe)
@@ -644,7 +643,7 @@ async function migrateLocalData() {
 window.supabaseClient = {
     supabase,
     currentUser: () => currentUser,
-    isConfigured: () => SUPABASE_URL !== 'SUA_URL_DO_SUPABASE_AQUI',
+    isConfigured: () => !!(SUPABASE_URL && SUPABASE_ANON_KEY),
     
     // Auth
     login,
