@@ -1,0 +1,8 @@
+{
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/(.*).html", "destination": "/$1" },
+    { "source": "/(.*)", "destination": "/" }
+  ],
+  "framework": "vite"
+}
