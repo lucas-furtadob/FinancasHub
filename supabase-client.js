@@ -11,16 +11,16 @@
  *    - SUPABASE_ANON_KEY = 'sua-chave-aqui'
  */
 
-const SUPABASE_URL = 'https://xmbuzgbdppjusxpnxxrv.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_KhUp8fhPa8-ZFTEL43nIpQ_0gsHrLP6';
+var SUPABASE_URL = 'https://xmbuzgbdppjusxpnxxrv.supabase.co';
+var SUPABASE_ANON_KEY = 'sb_publishable_KhUp8fhPa8-ZFTEL43nIpQ_0gsHrLP6';
 
 // Verifica se está configurado
 if (SUPABASE_URL === 'SUA_URL_DO_SUPABASE_AQUI') {
     console.warn('⚠️ Supabase não configurado! Edite supabase-client.js e adicione suas credenciais.');
 }
 
-// Cliente Supabase
-const supabase = window.supabase?.createClient?.(SUPABASE_URL, SUPABASE_ANON_KEY) || null;
+// Cliente Supabase (evita redeclarar se já existe)
+var supabase = typeof supabase !== 'undefined' ? supabase : (window.supabase?.createClient?.(SUPABASE_URL, SUPABASE_ANON_KEY) || null);
 
 // Estado global
 let currentUser = null;
