@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './hooks/useAuth';
 import { ToastProvider } from './components/Toast';
+import { ForceStyles } from './styles';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import Lancamentos from './pages/Lancamentos';
@@ -13,6 +14,7 @@ import Tags from './pages/Tags';
 export default function App() {
   return (
     <ToastProvider>
+      <ForceStyles />
       <AuthProvider>
         <BrowserRouter>
           <Layout>
