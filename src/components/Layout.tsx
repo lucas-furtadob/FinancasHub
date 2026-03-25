@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import './Layout.css';
 
@@ -19,13 +19,24 @@ const navItems = [
 export default function Layout({ children }: LayoutProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [submenuOpen, setSubmenuOpen] = useState<string | null>(null);
+  const [darkMode, setDarkMode] = useState(true);
   const location = useLocation();
+
+  useEffect(() => {
+    if (!darkMode) {
+      document.body.classList.add('light-theme');
+    } else {
+      document.body.classList.remove('light-theme');
+    }
+  }, [darkMode]);
 
   const toggleSidebar = () => setSidebarCollapsed(!sidebarCollapsed);
 
   const toggleSubmenu = (id: string) => {
     setSubmenuOpen(submenuOpen === id ? null : id);
   };
+
+  const toggleTheme = () => setDarkMode(!darkMode);
 
   return (
     <div className="app-container">
@@ -90,11 +101,17 @@ export default function Layout({ children }: LayoutProps) {
         </nav>
         
         <div className="nav-footer">
-          <div className="nav-item" style={{ cursor: 'pointer' }}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="moon" />
-            </svg>
-            <span className="nav-text">Modo Escuro</span>
+          <div className="nav-item" style={{ cursor: 'pointer' }} onClick={toggleTheme}>
+            {darkMode ? (
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+              </svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="5" /><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+              </svg>
+            )}
+            <span className="nav-text">{darkMode ? 'Modo Claro' : 'Modo Escuro'}</span>
           </div>
           <div style={{ height: '1px', background: 'var(--border)', margin: '8px 12px 16px' }}></div>
           <a href="#" className="nav-item"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="settings" /></svg><span className="nav-text">Configurações</span></a>
