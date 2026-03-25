@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinanceHub | Cartões de Crédito</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="cartoes.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Mono:wght@500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <button class="sidebar-toggle" onclick="toggleSidebar()">
+            <i data-lucide="chevron-left" id="toggle-icon"></i>
+        </button>
+        <div class="logo-container">
+            <span class="logo-text">HUB</span><span class="logo-short">H</span>
+        </div>
+        <div class="user-profile">
+            <div class="avatar"></div>
+            <div class="user-info">
+                <span class="user-name">Lucas Furtado</span>
+                <span class="user-email">lucas@email.com</span>
+            </div>
+        </div>
+        <nav class="nav-menu">
+            <div class="nav-label">MENU</div>
+            <a href="#" class="nav-item">
+                <i data-lucide="layout-dashboard"></i><span class="nav-text">Visão Geral</span>
+            </a>
+            <a href="index.html" class="nav-item">
+                <i data-lucide="arrow-right-left"></i><span class="nav-text">Lançamentos</span>
+            </a>
+            <div class="nav-group">
+                <div class="nav-item" onclick="toggleSubmenu('submenu-agenda')">
+                    <i data-lucide="calendar-range"></i><span class="nav-text">Agenda Financeira</span>
+                    <i data-lucide="chevron-down" class="chevron"></i>
+                </div>
+                <div class="submenu-wrapper" id="submenu-agenda">
+                    <a href="#" class="submenu-item" style="text-decoration:none;">Contas a pagar</a>
+                    <a href="#" class="submenu-item" style="text-decoration:none;">Contas a receber</a>
+                </div>
+            </div>
+            <a href="contas.html" class="nav-item">
+                <i data-lucide="wallet"></i><span class="nav-text">Contas financeiras</span>
+            </a>
+            <a href="cartoes.html" class="nav-item active">
+                <i data-lucide="credit-card"></i><span class="nav-text">Cartão de crédito</span>
+            </a>
+            <div class="nav-group">
+                <div class="nav-item" onclick="toggleSubmenu('submenu-planejamento')">
+                    <i data-lucide="briefcase"></i><span class="nav-text">Planejamento</span>
+                    <i data-lucide="chevron-down" class="chevron"></i>
+                </div>
+                <div class="submenu-wrapper" id="submenu-planejamento">
+                    <a href="#" class="submenu-item" style="text-decoration:none;">Objetivos</a>
+                    <a href="orcamento.html" class="submenu-item" style="text-decoration:none;">Orçamento Mensal</a>
+                </div>
+            </div>
+            <a href="#" class="nav-item">
+                <i data-lucide="bar-chart-3"></i><span class="nav-text">Relatórios</span>
+            </a>
+            <div class="nav-group open">
+                <div class="nav-item" onclick="toggleSubmenu('submenu-cadastros')">
+                    <i data-lucide="layout-grid"></i><span class="nav-text">Cadastros</span>
+                    <i data-lucide="chevron-down" class="chevron rotated"></i>
+                </div>
+                <div class="submenu-wrapper" id="submenu-cadastros">
+                    <a href="categorias.html" class="submenu-item" style="text-decoration:none;">Categorias</a>
+                    <a href="#" class="submenu-item" style="text-decoration:none;">Tags</a>
+                </div>
+            </div>
+        </nav>
+        <div class="nav-footer">
+            <a href="#" class="nav-item"><i data-lucide="settings"></i><span class="nav-text">Configurações</span></a>
+            <a href="#" class="nav-item"><i data-lucide="help-circle"></i><span class="nav-text">Ajuda</span></a>
+            <a href="#" class="nav-item logout"><i data-lucide="log-out"></i><span class="nav-text">Sair</span></a>
+        </div>
+    </aside>
+
+    <main class="content">
+        <header class="header">
+            <div class="page-info">
+                <h1>Cartões de Crédito</h1>
+                <p>Gerencie seus cartões, limites e faturas.</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn-primary" onclick="openCartaoModal()">
+                    <i data-lucide="plus"></i>
+                    Novo Cartão
+                </button>
+            </div>
+        </header>
+
+        <!-- Summary Cards -->
+        <div class="summary-cards">
+            <div class="card">
+                <div class="card-icon" style="background:rgba(239,68,68,0.1);">
+                    <i data-lucide="credit-card" style="color:#EF4444;"></i>
+                </div>
+                <div class="card-data">
+                    <span class="label">Limite Total</span>
+                    <span class="value" id="sum-limite" style="color:#FFF;">R$ 0,00</span>
+                    <div class="sub-data">em todos os cartões</div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-icon" style="background:rgba(239,68,68,0.12);">
+                    <i data-lucide="alert-circle" style="color:#EF4444;"></i>
+                </div>
+                <div class="card-data">
+                    <span class="label">Total Utilizado</span>
+                    <span class="value" id="sum-utilizado" style="color:#EF4444;">R$ 0,00</span>
+                    <div class="sub-data" id="sum-utilizado-pct">0% do limite</div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-icon" style="background:rgba(34,197,94,0.1);">
+                    <i data-lucide="shield-check" style="color:#22C55E;"></i>
+                </div>
+                <div class="card-data">
+                    <span class="label">Limite Disponível</span>
+                    <span class="value" id="sum-disponivel" style="color:#22C55E;">R$ 0,00</span>
+                    <div class="sub-data success">disponível para uso</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toolbar (só busca, sem filtros de bandeira) -->
+        <section class="table-container">
+            <div class="table-toolbar" style="border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:0;">
+                <div class="search-box">
+                    <i data-lucide="search" style="width:18px;height:18px;"></i>
+                    <input type="text" id="search-cartao" placeholder="Buscar cartão..." oninput="filterCartoes(this.value)">
+                </div>
+            </div>
+
+            <!-- Cards Grid -->
+            <div class="cartoes-grid" id="cartoes-grid">
+                <!-- Rendered by JS -->
+            </div>
+        </section>
+    </main>
+
+    <!-- ===================== PAINEL DETALHE CARTÃO ===================== -->
+    <div class="cc-detail-overlay" id="cc-detail-overlay" onclick="handleDetailOverlayClick(event)">
+        <div class="cc-detail-panel" id="cc-detail-panel">
+            <!-- Rendered by JS -->
+        </div>
+    </div>
+
+    <!-- ===================== MODAL NOVO/EDITAR CARTÃO ===================== -->
+    <div class="modal-overlay" id="cartao-modal" onclick="handleModalClick(event)">
+        <div class="modal-container" style="max-width:660px;">
+            <div class="modal-header">
+                <div>
+                    <h2 class="modal-title" id="modal-cartao-title">Novo cartão de crédito</h2>
+                    <p class="modal-subtitle">Cadastre um cartão e use nas despesas parceladas ou recorrentes.</p>
+                </div>
+                <button class="modal-close-btn" onclick="closeCartaoModal()">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div class="modal-form">
+                <input type="hidden" id="cc-id">
+
+                <!-- Row 1: Nome, Bandeira, Últimos 4 dígitos -->
+                <div class="form-row">
+                    <div class="form-group flex-2">
+                        <label>Nome do cartão</label>
+                        <div class="input-icon-wrapper">
+                            <input type="text" id="cc-nome" placeholder="Ex: Nubank Roxinho">
+                        </div>
+                    </div>
+                    <div class="form-group flex-1">
+                        <label>Bandeira</label>
+                        <div class="select-custom">
+                            <select id="cc-bandeira">
+                                <option value="">Selecione...</option>
+                                <option value="Visa">Visa</option>
+                                <option value="Mastercard">Mastercard</option>
+                                <option value="Elo">Elo</option>
+                                <option value="American Express">American Express</option>
+                                <option value="Hipercard">Hipercard</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group" style="width:140px;">
+                        <label>4 últimos dígitos</label>
+                        <div class="input-icon-wrapper">
+                            <input type="text" id="cc-digitos" placeholder="Ex: 1234" maxlength="4" oninput="maskOnlyDigits(this)">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 2: Limite, Conta Vinculada, Dia Fechamento, Dia Vencimento -->
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label>Limite</label>
+                        <div class="input-icon-wrapper">
+                            <input type="text" id="cc-limite" placeholder="R$ 0,00" oninput="maskCurrencyInput(this)">
+                        </div>
+                    </div>
+                    <div class="form-group flex-1">
+                        <label>Conta vinculada</label>
+                        <div class="select-custom">
+                            <select id="cc-conta">
+                                <option value="">Selecione a Conta...</option>
+                                <option value="Nubank PJ">Nubank PJ</option>
+                                <option value="Banco do Brasil S.A.">Banco do Brasil</option>
+                                <option value="Caixa Econômica">Caixa Econômica</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group" style="width:140px;">
+                        <label>Dia fechamento</label>
+                        <div class="input-icon-wrapper">
+                            <input type="number" id="cc-fechamento" placeholder="20" min="1" max="31">
+                        </div>
+                    </div>
+                    <div class="form-group" style="width:140px;">
+                        <label>Dia vencimento</label>
+                        <div class="input-icon-wrapper">
+                            <input type="number" id="cc-vencimento" placeholder="28" min="1" max="31">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 3: Cor -->
+                <div class="form-row" style="align-items:center;">
+                    <div class="form-group" style="flex:1;">
+                        <label>Cor do cartão</label>
+                        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+                            <button class="cc-cor-btn active" data-cor="#8B5CF6" style="background:#8B5CF6;" onclick="selectCor(this,'#8B5CF6')"></button>
+                            <button class="cc-cor-btn" data-cor="#EF4444" style="background:#EF4444;" onclick="selectCor(this,'#EF4444')"></button>
+                            <button class="cc-cor-btn" data-cor="#3B82F6" style="background:#3B82F6;" onclick="selectCor(this,'#3B82F6')"></button>
+                            <button class="cc-cor-btn" data-cor="#22C55E" style="background:#22C55E;" onclick="selectCor(this,'#22C55E')"></button>
+                            <button class="cc-cor-btn" data-cor="#F97316" style="background:#F97316;" onclick="selectCor(this,'#F97316')"></button>
+                            <button class="cc-cor-btn" data-cor="#EC4899" style="background:#EC4899;" onclick="selectCor(this,'#EC4899')"></button>
+                            <button class="cc-cor-btn" data-cor="#14B8A6" style="background:#14B8A6;" onclick="selectCor(this,'#14B8A6')"></button>
+                            <button class="cc-cor-btn" data-cor="#1F1F23" style="background:#3F3F46;border:1px solid #52525B;" onclick="selectCor(this,'#1F1F23')"></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="justify-content:flex-end;gap:12px;display:flex;padding:20px 28px;border-top:1px solid var(--border);">
+                <button class="btn-secondary-outline" onclick="closeCartaoModal()">Cancelar</button>
+                <button class="btn-success" onclick="saveCartao()">
+                    <i data-lucide="credit-card" style="width:16px;height:16px;"></i>
+                    Salvar Cartão
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== MODAL EXCLUIR CARTÃO ===================== -->
+    <div class="modal-overlay" id="delete-cartao-modal" onclick="handleDeleteModalClick(event)">
+        <div class="modal-container" style="max-width:440px;">
+            <div class="modal-header">
+                <div>
+                    <h2 class="modal-title">Excluir Cartão</h2>
+                    <p class="modal-subtitle" id="delete-cartao-msg">Tem certeza que deseja excluir este cartão?</p>
+                </div>
+                <button class="modal-close-btn" onclick="closeDeleteModal()">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div class="modal-footer" style="justify-content:flex-end;gap:12px;display:flex;padding:20px 28px;border-top:1px solid var(--border);">
+                <button class="btn-secondary-outline" onclick="closeDeleteModal()">Cancelar</button>
+                <button class="btn-danger-solid" onclick="confirmDeleteCartao()">
+                    <i data-lucide="trash-2" style="width:16px;height:16px;"></i>
+                    Excluir
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="cartoes.js"></script>
+</body>
+</html>

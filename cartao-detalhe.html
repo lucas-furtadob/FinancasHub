@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinanceHub | Detalhe do Cartão</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="cartao-detalhe.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Mono:wght@500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <button class="sidebar-toggle" onclick="toggleSidebar()">
+            <i data-lucide="chevron-left" id="toggle-icon"></i>
+        </button>
+        <div class="logo-container">
+            <span class="logo-text">HUB</span><span class="logo-short">H</span>
+        </div>
+        <div class="user-profile">
+            <div class="avatar"></div>
+            <div class="user-info">
+                <span class="user-name">Lucas Furtado</span>
+                <span class="user-email">lucas@email.com</span>
+            </div>
+        </div>
+        <nav class="nav-menu">
+            <div class="nav-label">MENU</div>
+            <a href="#" class="nav-item">
+                <i data-lucide="layout-dashboard"></i><span class="nav-text">Visão Geral</span>
+            </a>
+            <a href="index.html" class="nav-item">
+                <i data-lucide="arrow-right-left"></i><span class="nav-text">Lançamentos</span>
+            </a>
+            <div class="nav-group">
+                <div class="nav-item" onclick="toggleSubmenu('submenu-agenda')">
+                    <i data-lucide="calendar-range"></i><span class="nav-text">Agenda Financeira</span>
+                    <i data-lucide="chevron-down" class="chevron"></i>
+                </div>
+                <div class="submenu-wrapper" id="submenu-agenda">
+                    <a href="#" class="submenu-item" style="text-decoration:none;">Contas a pagar</a>
+                    <a href="#" class="submenu-item" style="text-decoration:none;">Contas a receber</a>
+                </div>
+            </div>
+            <a href="contas.html" class="nav-item">
+                <i data-lucide="wallet"></i><span class="nav-text">Contas financeiras</span>
+            </a>
+            <a href="cartoes.html" class="nav-item active">
+                <i data-lucide="credit-card"></i><span class="nav-text">Cartão de crédito</span>
+            </a>
+            <div class="nav-group">
+                <div class="nav-item" onclick="toggleSubmenu('submenu-planejamento')">
+                    <i data-lucide="briefcase"></i><span class="nav-text">Planejamento</span>
+                    <i data-lucide="chevron-down" class="chevron"></i>
+                </div>
+                <div class="submenu-wrapper" id="submenu-planejamento">
+                    <a href="#" class="submenu-item" style="text-decoration:none;">Objetivos</a>
+                    <a href="orcamento.html" class="submenu-item" style="text-decoration:none;">Orçamento Mensal</a>
+                </div>
+            </div>
+            <a href="#" class="nav-item">
+                <i data-lucide="bar-chart-3"></i><span class="nav-text">Relatórios</span>
+            </a>
+            <div class="nav-group">
+                <div class="nav-item" onclick="toggleSubmenu('submenu-cadastros')">
+                    <i data-lucide="layout-grid"></i><span class="nav-text">Cadastros</span>
+                    <i data-lucide="chevron-down" class="chevron rotated"></i>
+                </div>
+                <div class="submenu-wrapper" id="submenu-cadastros">
+                    <a href="categorias.html" class="submenu-item" style="text-decoration:none;">Categorias</a>
+                    <a href="#" class="submenu-item" style="text-decoration:none;">Tags</a>
+                </div>
+            </div>
+        </nav>
+        <div class="nav-footer">
+            <a href="#" class="nav-item"><i data-lucide="settings"></i><span class="nav-text">Configurações</span></a>
+            <a href="#" class="nav-item"><i data-lucide="help-circle"></i><span class="nav-text">Ajuda</span></a>
+            <a href="#" class="nav-item logout"><i data-lucide="log-out"></i><span class="nav-text">Sair</span></a>
+        </div>
+    </aside>
+
+    <main class="content" id="main-content">
+        <!-- Renderizado por JS -->
+    </main>
+
+    <!-- =========== MODAL PAGAR FATURA =========== -->
+    <div class="modal-overlay" id="pay-modal" onclick="handlePayModalClick(event)">
+        <div class="modal-container" style="max-width:480px;">
+            <div class="modal-header">
+                <div>
+                    <h2 class="modal-title" id="pay-modal-title">Pagar Fatura</h2>
+                    <p class="modal-subtitle" id="pay-modal-sub">Confirme o pagamento da fatura.</p>
+                </div>
+                <button class="modal-close-btn" onclick="closePayModal()">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div class="modal-form">
+                <input type="hidden" id="pay-fatura-id">
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label>Valor pago</label>
+                        <div class="input-icon-wrapper">
+                            <input type="text" id="pay-valor" placeholder="R$ 0,00" oninput="maskCurrencyInput(this)">
+                        </div>
+                    </div>
+                    <div class="form-group flex-1">
+                        <label>Data do pagamento</label>
+                        <div class="input-icon-wrapper">
+                            <input type="text" id="pay-data" placeholder="DD/MM/AAAA" maxlength="10" oninput="maskDateInput(this)">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label>Conta debitada</label>
+                        <div class="select-custom">
+                            <select id="pay-conta">
+                                <option value="">Selecione...</option>
+                                <option value="Nubank PJ">Nubank PJ</option>
+                                <option value="Banco do Brasil S.A.">Banco do Brasil</option>
+                                <option value="Caixa Econômica">Caixa Econômica</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="pay-info-box" id="pay-info-box">
+                    <i data-lucide="info" style="width:14px;height:14px;color:var(--accent);flex-shrink:0;"></i>
+                    <span>O pagamento será registrado como uma despesa na tela de Lançamentos.</span>
+                </div>
+            </div>
+            <div class="modal-footer" style="display:flex;gap:12px;justify-content:flex-end;padding:20px 28px;border-top:1px solid var(--border);">
+                <button class="btn-secondary-outline" onclick="closePayModal()">Cancelar</button>
+                <button class="btn-success" onclick="confirmPagamento()">
+                    <i data-lucide="check-circle" style="width:16px;height:16px;"></i>
+                    Confirmar Pagamento
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========== MODAL NOVO LANÇAMENTO =========== -->
+    <div class="modal-overlay" id="lancamento-modal" onclick="handleLancamentoModalClick(event)">
+        <div class="modal-container" style="max-width:520px;">
+            <div class="modal-header">
+                <div>
+                    <h2 class="modal-title" id="lanc-modal-title">Novo Lançamento</h2>
+                    <p class="modal-subtitle">Preencha os dados do gasto ou receita no cartão.</p>
+                </div>
+                <button class="modal-close-btn" onclick="closeLancamentoModal()">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div class="modal-form">
+                <input type="hidden" id="edit-fatura-id">
+                <input type="hidden" id="edit-lanc-id">
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label>Descrição</label>
+                        <input type="text" id="lanc-titulo" placeholder="Ex: iFood, Amazon, Posto...">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label>Valor</label>
+                        <div class="input-icon-wrapper">
+                            <input type="text" id="lanc-valor" placeholder="R$ 0,00" oninput="maskCurrencyInput(this)">
+                        </div>
+                    </div>
+                    <div class="form-group flex-1">
+                        <label>Data</label>
+                        <div class="input-icon-wrapper">
+                            <input type="text" id="lanc-data" placeholder="DD/MM/AAAA" maxlength="10" oninput="maskDateInput(this)">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label>Categoria</label>
+                        <div class="select-custom">
+                            <select id="lanc-categoria">
+                                <option value="Alimentação">Alimentação</option>
+                                <option value="Restaurante">Restaurante</option>
+                                <option value="Mercado">Mercado</option>
+                                <option value="Tecnologia">Tecnologia</option>
+                                <option value="Transporte">Transporte</option>
+                                <option value="Saúde">Saúde</option>
+                                <option value="Educação">Educação</option>
+                                <option value="Assinaturas">Assinaturas</option>
+                                <option value="Compras">Compras</option>
+                                <option value="Lazer">Lazer</option>
+                                <option value="Anuidade">Anuidade</option>
+                                <option value="Taxas">Taxas</option>
+                                <option value="Estorno">Estorno</option>
+                                <option value="Outros">Outros</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group flex-1">
+                        <label>Parcelas (opcional)</label>
+                        <input type="text" id="lanc-parcela" placeholder="Ex: 3/12">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label>Tipo</label>
+                        <div style="display:flex;gap:12px;margin-top:8px;">
+                            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:#FFF;">
+                                <input type="radio" name="lanc-tipo" value="despesa" checked> Despesa
+                            </label>
+                            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:#FFF;">
+                                <input type="radio" name="lanc-tipo" value="receita"> Receita (estorno)
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="display:flex;gap:12px;justify-content:flex-end;padding:20px 28px;border-top:1px solid var(--border);">
+                <button class="btn-secondary-outline" onclick="closeLancamentoModal()">Cancelar</button>
+                <button class="btn-primary" onclick="saveLancamento()">Salvar Lançamento</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========== MODAL CONFIRMAÇÃO EXCLUSÃO =========== -->
+    <div class="modal-overlay" id="delete-lanc-modal" onclick="handleDeleteLancModalClick(event)">
+        <div class="modal-container" style="max-width:400px;">
+            <div class="modal-header">
+                <div>
+                    <h2 class="modal-title">Excluir Lançamento</h2>
+                    <p class="modal-subtitle">Esta ação não pode ser desfeita.</p>
+                </div>
+                <button class="modal-close-btn" onclick="closeDeleteLancModal()">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div class="modal-form">
+                <input type="hidden" id="delete-fatura-id">
+                <input type="hidden" id="delete-lanc-id">
+                <p style="color:var(--text-secondary);font-size:14px;line-height:1.5;">
+                    Tem certeza que deseja remover o lançamento <strong id="delete-lanc-name" style="color:#FFF;"></strong> da fatura?
+                </p>
+                <div class="pay-info-box" style="background:rgba(239,68,68,0.08);border-color:rgba(239,68,68,0.2);margin-top:16px;">
+                    <i data-lucide="alert-circle" style="width:14px;height:14px;color:#EF4444;flex-shrink:0;"></i>
+                    <span style="color:#EF4444;">O valor será deduzido do total da fatura e o limite utilizado do cartão será atualizado.</span>
+                </div>
+            </div>
+            <div class="modal-footer" style="display:flex;gap:12px;justify-content:flex-end;padding:20px 28px;border-top:1px solid var(--border);">
+                <button class="btn-secondary-outline" onclick="closeDeleteLancModal()">Cancelar</button>
+                <button style="background:#EF4444;color:#FFF;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer;" onclick="confirmDeleteLancamento()">Excluir</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========== MODAL REABRIR FATURA =========== -->
+    <div class="modal-overlay" id="reopen-modal" onclick="handleReopenModalClick(event)">
+        <div class="modal-container" style="max-width:420px;">
+            <div class="modal-header">
+                <div>
+                    <h2 class="modal-title">Reabrir Fatura</h2>
+                    <p class="modal-subtitle" id="reopen-modal-sub">Confirme a reabertura desta fatura.</p>
+                </div>
+                <button class="modal-close-btn" onclick="closeReopenModal()">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div class="modal-form">
+                <input type="hidden" id="reopen-fatura-id">
+                <div class="pay-info-box" style="background:rgba(245,158,11,0.08);border-color:rgba(245,158,11,0.2);">
+                    <i data-lucide="alert-triangle" style="width:14px;height:14px;color:#F59E0B;flex-shrink:0;"></i>
+                    <span>A fatura voltará ao status <strong>Em aberto</strong>. O lançamento de pagamento anterior será removido dos registros.</span>
+                </div>
+            </div>
+            <div class="modal-footer" style="display:flex;gap:12px;justify-content:flex-end;padding:20px 28px;border-top:1px solid var(--border);">
+                <button class="btn-secondary-outline" onclick="closeReopenModal()">Cancelar</button>
+                <button style="display:inline-flex;align-items:center;gap:8px;background:#F59E0B;color:#FFF;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer;" onclick="confirmReabrir()">
+                    <i data-lucide="refresh-cw" style="width:16px;height:16px;"></i>
+                    Reabrir Fatura
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="cartao-detalhe.js"></script>
+</body>
+</html>

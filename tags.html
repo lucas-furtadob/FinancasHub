@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinanceHub | Tags</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="categorias.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Mono:wght@500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <button class="sidebar-toggle" onclick="toggleSidebar()">
+            <i data-lucide="chevron-left" id="toggle-icon"></i>
+        </button>
+        <div class="logo-container">
+            <span class="logo-text">HUB</span><span class="logo-short">H</span>
+        </div>
+        <div class="user-profile">
+            <div class="avatar"></div>
+            <div class="user-info">
+                <span class="user-name">Lucas Furtado</span>
+                <span class="user-email">lucas@email.com</span>
+            </div>
+        </div>
+        <nav class="nav-menu">
+            <div class="nav-label">MENU</div>
+            <a href="index.html" class="nav-item">
+                <i data-lucide="layout-dashboard"></i><span class="nav-text">Visão Geral</span>
+            </a>
+            <a href="index.html" class="nav-item">
+                <i data-lucide="arrow-right-left"></i><span class="nav-text">Lançamentos</span>
+            </a>
+            <div class="nav-group">
+                <div class="nav-item" onclick="toggleSubmenu('submenu-agenda')">
+                    <i data-lucide="calendar-range"></i><span class="nav-text">Agenda Financeira</span>
+                    <i data-lucide="chevron-down" class="chevron"></i>
+                </div>
+                <div class="submenu-wrapper" id="submenu-agenda">
+                    <a href="#" class="submenu-item">Contas a pagar</a>
+                    <a href="#" class="submenu-item">Contas a receber</a>
+                </div>
+            </div>
+            
+            <a href="contas.html" class="nav-item">
+                <i data-lucide="wallet"></i><span class="nav-text">Contas financeiras</span>
+            </a>
+            <a href="cartoes.html" class="nav-item">
+                <i data-lucide="credit-card"></i><span class="nav-text">Cartão de crédito</span>
+            </a>
+
+            <div class="nav-group">
+                <div class="nav-item" onclick="toggleSubmenu('submenu-planejamento')">
+                    <i data-lucide="briefcase"></i><span class="nav-text">Planejamento</span>
+                    <i data-lucide="chevron-down" class="chevron"></i>
+                </div>
+                <div class="submenu-wrapper" id="submenu-planejamento">
+                    <a href="#" class="submenu-item">Objetivos</a>
+                    <a href="orcamento.html" class="submenu-item">Orçamento Mensal</a>
+                </div>
+            </div>
+            <a href="#" class="nav-item">
+                <i data-lucide="bar-chart-3"></i><span class="nav-text">Relatórios</span>
+            </a>
+            <div class="nav-group open">
+                <div class="nav-item active" onclick="toggleSubmenu('submenu-cadastros')">
+                    <i data-lucide="layout-grid"></i><span class="nav-text">Cadastros</span>
+                    <i data-lucide="chevron-down" class="chevron"></i>
+                </div>
+                <div class="submenu-wrapper" id="submenu-cadastros">
+                    <a href="categorias.html" class="submenu-item">Categorias</a>
+                    <a href="tags.html" class="submenu-item active" style="color:#FFF;">Tags</a>
+                </div>
+            </div>
+        </nav>
+        <div class="nav-footer">
+            <div class="nav-item" id="theme-toggle" onclick="toggleTheme()" style="cursor:pointer; margin-bottom: 8px;">
+                <i data-lucide="moon" id="theme-icon-dark"></i>
+                <i data-lucide="sun" id="theme-icon-light" class="hidden"></i>
+                <span class="nav-text" id="theme-text">Modo Escuro</span>
+            </div>
+            <div style="height: 1px; background: var(--border); margin: 8px 12px 16px;"></div>
+            <a href="#" class="nav-item"><i data-lucide="settings"></i><span class="nav-text">Configurações</span></a>
+            <a href="#" class="nav-item"><i data-lucide="help-circle"></i><span class="nav-text">Ajuda</span></a>
+            <a href="#" class="nav-item logout"><i data-lucide="log-out"></i><span class="nav-text">Sair</span></a>
+        </div>
+    </aside>
+
+    <main class="content">
+        <header class="header">
+            <div class="page-info">
+                <h1>Tags</h1>
+                <p>Gerencie as tags para organizar seus lançamentos.</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn-primary" onclick="openTagModal()">
+                    <i data-lucide="plus"></i>
+                    Nova Tag
+                </button>
+            </div>
+        </header>
+
+        <!-- STATUS TABS -->
+        <div class="tabs-header-row">
+            <div class="tabs-group align-right">
+                <span class="tabs-label">Status da tag</span>
+                <div class="tabs-container" id="status-tabs">
+                    <div class="tab-btn active" onclick="switchTab('ativas', event)">Ativas</div>
+                    <div class="tab-btn" onclick="switchTab('arquivadas', event)">Arquivadas</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LISTA DE TAGS -->
+        <div class="categories-card">
+            <div class="table-container">
+                <table class="categories-table" id="tags-table">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th style="text-align: left; width: 140px;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tags-body">
+                        <!-- Renderizado via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL TAG -->
+    <div class="modal-overlay" id="tag-modal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <div>
+                    <h2 class="modal-title" id="modal-tag-title">Nova Tag</h2>
+                    <p class="modal-subtitle">Preencha os dados da tag.</p>
+                </div>
+                <button class="modal-close-btn" onclick="closeTagModal()">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <form class="modal-form" id="tag-form">
+                <input type="hidden" id="tag-id">
+                
+                <div class="form-row">
+                    <div class="form-group flex-2">
+                        <label>Nome *</label>
+                        <input type="text" id="tag-nome" placeholder="Ex: Trabalho" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label>Ícone</label>
+                        <div class="icon-selector" id="icon-selector-grid">
+                            <!-- Ícones renderizados via JS -->
+                        </div>
+                        <input type="hidden" id="tag-icon" value="tag">
+                    </div>
+                    <div class="form-group" style="width: 100px;">
+                        <label>Cor</label>
+                        <input type="color" id="tag-cor" value="#6366F1">
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn-ghost" onclick="closeTagModal()">Cancelar</button>
+                    <button type="submit" class="btn-primary">Salvar Tag</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL CONFIRMAÇÃO EXCLUSÃO -->
+    <div class="modal-overlay" id="delete-tag-modal">
+        <div class="modal-container" style="max-width:400px; padding: 32px;">
+            <div style="text-align:center;">
+                <div style="background:rgba(239,68,68,0.1); width:64px; height:64px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin: 0 auto 20px;">
+                    <i data-lucide="alert-triangle" style="color:#EF4444; width:32px; height:32px;"></i>
+                </div>
+                <h2 style="font-size:20px; font-weight:700; color:#FFF; margin-bottom:12px;">Excluir Tag?</h2>
+                <p style="color:var(--text-muted); font-size:14px; line-height:1.5;">Esta ação removerá permanentemente esta tag. Deseja continuar?</p>
+            </div>
+            <div class="cd-confirm-modal-footer">
+                <button class="btn-ghost" onclick="closeDeleteTagModal()">Cancelar</button>
+                <button class="btn-danger" id="confirm-delete-tag-btn">Excluir</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast toast-hidden">
+        <i data-lucide="check-circle" style="width:18px;height:18px;flex-shrink:0;"></i>
+        <span id="toast-message">Operação realizada com sucesso!</span>
+    </div>
+
+    <script src="theme.js"></script>
+    <script src="tags.js"></script>
+</body>
+</html>

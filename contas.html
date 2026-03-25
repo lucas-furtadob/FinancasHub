@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinanceHub | Contas Financeiras</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Mono:wght@500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <aside class="sidebar" id="sidebar">
+        <button class="sidebar-toggle" onclick="toggleSidebar()">
+            <i data-lucide="chevron-left" id="toggle-icon"></i>
+        </button>
+        <div class="logo-container">
+            <span class="logo-text">HUB</span><span class="logo-short">H</span>
+        </div>
+        <div class="user-profile">
+            <div class="avatar"></div>
+            <div class="user-info">
+                <span class="user-name">Lucas Furtado</span>
+                <span class="user-email">lucas@email.com</span>
+            </div>
+        </div>
+        <nav class="nav-menu">
+            <div class="nav-label">MENU</div>
+            <a href="#" class="nav-item">
+                <i data-lucide="layout-dashboard"></i><span class="nav-text">Visão Geral</span>
+            </a>
+            <a href="index.html" class="nav-item">
+                <i data-lucide="arrow-right-left"></i><span class="nav-text">Lançamentos</span>
+            </a>
+            <div class="nav-group">
+                <div class="nav-item" onclick="toggleSubmenu('submenu-agenda')">
+                    <i data-lucide="calendar-range"></i><span class="nav-text">Agenda Financeira</span>
+                    <i data-lucide="chevron-down" class="chevron"></i>
+                </div>
+                <div class="submenu-wrapper" id="submenu-agenda">
+                    <a href="#" class="submenu-item" style="text-decoration:none;">Contas a pagar</a>
+                    <a href="#" class="submenu-item" style="text-decoration:none;">Contas a receber</a>
+                </div>
+            </div>
+            <a href="contas.html" class="nav-item active">
+                <i data-lucide="wallet"></i><span class="nav-text">Contas financeiras</span>
+            </a>
+            <a href="cartoes.html" class="nav-item">
+                <i data-lucide="credit-card"></i><span class="nav-text">Cartão de crédito</span>
+            </a>
+            <div class="nav-group">
+                <div class="nav-item" onclick="toggleSubmenu('submenu-planejamento')">
+                    <i data-lucide="briefcase"></i><span class="nav-text">Planejamento</span>
+                    <i data-lucide="chevron-down" class="chevron"></i>
+                </div>
+                <div class="submenu-wrapper" id="submenu-planejamento">
+                    <a href="#" class="submenu-item" style="text-decoration:none;">Objetivos</a>
+                    <a href="orcamento.html" class="submenu-item" style="text-decoration:none;">Orçamento Mensal</a>
+                </div>
+            </div>
+            <a href="#" class="nav-item">
+                <i data-lucide="bar-chart-3"></i><span class="nav-text">Relatórios</span>
+            </a>
+            <div class="nav-group">
+                <div class="nav-item" onclick="toggleSubmenu('submenu-cadastros')">
+                    <i data-lucide="layout-grid"></i><span class="nav-text">Cadastros</span>
+                    <i data-lucide="chevron-down" class="chevron rotated"></i>
+                </div>
+                <div class="submenu-wrapper" id="submenu-cadastros">
+                    <a href="categorias.html" class="submenu-item" style="text-decoration:none;">Categorias</a>
+                    <a href="#" class="submenu-item" style="text-decoration:none;">Tags</a>
+                </div>
+            </div>
+        </nav>
+        <div class="nav-footer">
+            <div class="nav-item" id="theme-toggle" onclick="toggleTheme()" style="cursor:pointer; margin-bottom: 8px;">
+                <i data-lucide="moon" id="theme-icon-dark"></i>
+                <i data-lucide="sun" id="theme-icon-light" class="hidden"></i>
+                <span class="nav-text" id="theme-text">Modo Escuro</span>
+            </div>
+            <div style="height: 1px; background: var(--border); margin: 8px 12px 16px;"></div>
+            <a href="#" class="nav-item"><i data-lucide="settings"></i><span class="nav-text">Configurações</span></a>
+            <a href="#" class="nav-item"><i data-lucide="help-circle"></i><span class="nav-text">Ajuda</span></a>
+            <a href="#" class="nav-item logout"><i data-lucide="log-out"></i><span class="nav-text">Sair</span></a>
+        </div>
+    </aside>
+
+    <main class="content">
+        <header class="header">
+            <div class="page-info">
+                <h1>Contas Financeiras</h1>
+                <p>Gerencie todos os seus saldos, instituições e carteiras.</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn-primary" onclick="openContaModal()">
+                    <i data-lucide="plus"></i>
+                    Nova Conta
+                </button>
+            </div>
+        </header>
+
+        <div class="summary-cards" id="contas-summary-cards">
+            <!-- Rendered via JS -->
+            <div class="card">
+                <div class="card-icon balance"><i data-lucide="landmark"></i></div>
+                <div class="card-data">
+                    <span class="label">Saldo Total Geral</span>
+                    <span class="value" id="tot-geral" style="color:var(--accent);">R$ 0,00</span>
+                    <div class="sub-data" id="tot-contas">0 contas cadastradas</div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-icon received"><i data-lucide="wallet"></i></div>
+                <div class="card-data">
+                    <span class="label">Saldo em Conta Corrente</span>
+                    <span class="value" id="tot-corrente">R$ 0,00</span>
+                    <div class="sub-data success">Disponível para uso</div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-icon"><i data-lucide="trending-up" style="color:#F59E0B;"></i></div>
+                <div class="card-data">
+                    <span class="label">Investimentos / Poupança</span>
+                    <span class="value" id="tot-invest">R$ 0,00</span>
+                    <div class="sub-data" style="color:#F59E0B;">Rendimento passivo</div>
+                </div>
+            </div>
+        </div>
+
+        <section class="table-container">
+            <div class="table-toolbar">
+                <div class="search-box">
+                    <i data-lucide="search" style="width:18px;height:18px;"></i>
+                    <input type="text" id="search-input" placeholder="Buscar Caixa ou Instituição..." oninput="filterSearch(this.value)">
+                </div>
+                <div class="filters">
+                    <div class="filter-pills">
+                        <span class="pill active" onclick="filterByTipo(this,'todos')">Todas</span>
+                        <span class="pill" onclick="filterByTipo(this,'corrente')">Conta Corrente</span>
+                        <span class="pill" onclick="filterByTipo(this,'poupanca')">Conta Poupança</span>
+                        <span class="pill" onclick="filterByTipo(this,'investimento')">Investimento</span>
+                    </div>
+                </div>
+            </div>
+
+            <table id="contas-table" style="width:100%;border-collapse:collapse;margin-top:10px;color:#ADADB0;font-size:13px;">
+                <thead>
+                    <tr style="text-align:left;border-bottom:1px solid #1F1F23;background:#0D0E12;">
+                        <th style="padding:14px 24px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">BANCO</th>
+                        <th style="padding:14px 24px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">NOME DA CONTA</th>
+                        <th style="padding:14px 24px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">SALDO ATUAL</th>
+                        <th style="padding:14px 24px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">SALDO PREVISTO</th>
+                        <th style="padding:14px 24px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">SITUAÇÃO</th>
+                        <th style="padding:14px 24px;color:var(--text-muted);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;">AÇÕES</th>
+                    </tr>
+                </thead>
+                <tbody id="contas-tbody"></tbody>
+            </table>
+        </section>
+    </main>
+
+    <!-- Modal Nova Conta -->
+    <div class="modal-overlay" id="conta-modal">
+        <div class="modal-container" style="max-width:700px;">
+            <div class="modal-header">
+                <div>
+                    <h2 id="conta-modal-title">Nova conta</h2>
+                    <p class="modal-subtitle">Cadastre uma conta bancária ou carteira para continuar o lançamento.</p>
+                </div>
+                <div class="modal-close" onclick="closeContaModal()">
+                    <i data-lucide="x"></i>
+                </div>
+            </div>
+            <div class="modal-form">
+                <input type="hidden" id="c-id">
+                
+                <div class="form-row">
+                    <div class="form-group flex-2">
+                        <label>Nome da conta <span class="req-star">*</span></label>
+                        <div class="input-icon-wrapper">
+                            <input type="text" id="c-nome" placeholder="Ex: Banco do Brasil">
+                        </div>
+                    </div>
+                    <div class="form-group flex-1">
+                        <label>Tipo da conta <span class="req-star">*</span></label>
+                        <div class="select-custom">
+                            <select id="c-tipo">
+                                <option value="">Selecione o tipo...</option>
+                                <option value="Conta Corrente">Conta Corrente</option>
+                                <option value="Conta Poupança">Conta Poupança</option>
+                                <option value="Conta Investimento">Conta Investimento</option>
+                                <option value="Conta de Pagamento">Conta de Pagamento</option>
+                                <option value="Caixa Físico">Caixa Físico / Dinheiro</option>
+                            </select>
+                            <i data-lucide="chevron-down"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group flex-2">
+                        <label>Banco <span class="req-star">*</span></label>
+                        <div class="select-custom">
+                            <select id="c-banco">
+                                <option value="">Selecione o banco...</option>
+                                <option value="001 - Banco do Brasil S.A.">001 - Banco do Brasil</option>
+                                <option value="033 - Banco Santander (Brasil) S.A.">033 - Santander</option>
+                                <option value="104 - Caixa Econômica Federal">104 - Caixa Econômica</option>
+                                <option value="237 - Banco Bradesco S.A.">237 - Bradesco</option>
+                                <option value="260 - Nu Pagamentos S.A. (Nubank)">260 - Nubank</option>
+                                <option value="341 - Itaú Unibanco S.A.">341 - Itaú Unibanco</option>
+                            </select>
+                            <i data-lucide="chevron-down"></i>
+                        </div>
+                    </div>
+                    <div class="form-group flex-1" style="min-width:0;">
+                        <label>Agência</label>
+                        <div class="input-icon-wrapper">
+                            <input type="text" id="c-agencia" placeholder="1234-5" oninput="maskNumber(this)">
+                        </div>
+                    </div>
+                    <div class="form-group flex-1" style="min-width:0;">
+                        <label>Conta</label>
+                        <div class="input-icon-wrapper">
+                            <input type="text" id="c-conta-num" placeholder="12345-6" oninput="maskNumber(this)">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label>Saldo inicial <span class="req-star">*</span></label>
+                        <div class="input-currency">
+                            <span class="currency-label">R$</span>
+                            <input type="text" id="c-saldo" placeholder="0,00" oninput="maskCurrency(this)">
+                        </div>
+                    </div>
+                    <div class="form-group flex-1">
+                        <label>Data do saldo <span class="req-star">*</span></label>
+                        <div class="input-icon-wrapper date-wrapper" id="c-data-saldo-wrap">
+                            <div style="position:relative;width:48px;height:100%;display:flex;align-items:center;padding-left:16px;">
+                                <i data-lucide="calendar" style="cursor:pointer;flex-shrink:0;margin-left:0;"></i>
+                                <input type="date" id="c-data-saldo-native" class="date-native-overlay" onchange="setDateFromNative(this,'c-data-saldo')" style="position:absolute;left:0;top:0;width:100%;height:100%;opacity:0;cursor:pointer;padding:0;box-sizing:border-box;">
+                            </div>
+                            <input type="text" id="c-data-saldo" placeholder="DD/MM/AAAA" oninput="maskDate(this)" maxlength="10">
+                        </div>
+                    </div>
+                    <div class="form-group flex-1">
+                        <label>Observações</label>
+                        <div class="input-icon-wrapper">
+                            <input type="text" id="c-obs" placeholder="Ex.: Conta mensal...">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="status-row" style="margin-top:8px;">
+                    <input type="checkbox" id="c-principal" style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer;">
+                    <label for="c-principal" style="color:#FFF;cursor:pointer;margin:0;">Definir como conta principal</label>
+                </div>
+                
+                <div class="form-group" style="margin-top:24px;">
+                    <label>Cor de identificação visual</label>
+                    <div style="display:flex;gap:12px;margin-top:8px;" id="c-colorpicker">
+                        <div class="color-opt active" style="background:#EF4444;" onclick="selectColor(this, '#EF4444')"></div>
+                        <div class="color-opt" style="background:#F97316;" onclick="selectColor(this, '#F97316')"></div>
+                        <div class="color-opt" style="background:#F59E0B;" onclick="selectColor(this, '#F59E0B')"></div>
+                        <div class="color-opt" style="background:#10B981;" onclick="selectColor(this, '#10B981')"></div>
+                        <div class="color-opt" style="background:#3B82F6;" onclick="selectColor(this, '#3B82F6')"></div>
+                        <div class="color-opt" style="background:#8B5CF6;" onclick="selectColor(this, '#8B5CF6')"></div>
+                        <div class="color-opt" style="background:#EC4899;" onclick="selectColor(this, '#EC4899')"></div>
+                        <div class="color-opt" style="background:#6B7280;" onclick="selectColor(this, '#6B7280')"></div>
+                    </div>
+                    <input type="hidden" id="c-cor" value="#EF4444">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="footer-btns">
+                    <button class="btn-secondary-outline" onclick="closeContaModal()">Cancelar</button>
+                    <button class="btn-success" onclick="saveConta()">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Excluir -->
+    <div class="modal-overlay" id="delete-conta-modal" style="z-index:999;">
+        <div class="modal-container confirm-modal" style="max-width:400px;text-align:center;padding:32px;">
+            <div style="width:56px;height:56px;background:rgba(239,68,68,0.1);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+                <i data-lucide="alert-triangle" style="width:26px;height:26px;color:#EF4444;"></i>
+            </div>
+            <h3 style="margin-bottom:8px;font-size:18px;">Excluir Conta?</h3>
+            <p style="color:var(--text-secondary);font-size:14px;margin-bottom:24px;">
+                Tem certeza que deseja excluir esta conta? Lançamentos associados ficarão órfãos de banco.
+            </p>
+            <div class="confirm-modal-btns" style="display:flex;gap:12px;justify-content:center;">
+                <button class="btn-secondary-outline" onclick="closeDeleteContaModal()" style="flex:1;">Cancelar</button>
+                <button class="btn-danger" style="padding:10px 24px;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;background:#EF4444;color:#FFF;flex:1;" onclick="confirmDeleteConta()">Excluir</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Reajuste de Saldo -->
+    <div class="modal-overlay" id="ajuste-modal" style="display:none;z-index:999;">
+        <div class="modal-container" style="max-width:540px;">
+            <div class="modal-header" style="border-bottom:none;padding-bottom:16px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <h2 style="font-size:22px;margin:0;">Reajuste de saldo</h2>
+                    <div class="modal-close" onclick="closeAjusteModal()" style="position:static;">
+                        <i data-lucide="x"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-form" style="padding-top:0;">
+                <input type="hidden" id="ajuste-conta-id">
+                <div style="margin-bottom:24px;">
+                    <input type="text" id="ajuste-valor" class="input-ajuste-valor" placeholder="R$ 0,00" oninput="maskCurrency(this)">
+                </div>
+                
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;color:var(--text-secondary);font-size:14px;">
+                    <span>Saldo inicial da conta</span>
+                    <strong id="ajuste-saldo-atual" style="color:#FFF;">R$ 0,00</strong>
+                </div>
+
+                <div style="display:flex;gap:8px;margin-bottom:16px;color:var(--text-muted);font-size:14px;align-items:center;">
+                    <i data-lucide="info" style="width:16px;height:16px;"></i>
+                    Você gostaria de...
+                </div>
+
+                <div class="ajuste-options-grid">
+                    <div class="ajuste-option hover-scale active" id="opt-transacao" onclick="selectAjusteTipo('transacao')">
+                        <strong>CRIAR TRANSAÇÃO DE AJUSTE</strong>
+                        <p>Para ajustar seu saldo uma despesa de ajuste será criada.</p>
+                    </div>
+                    <div class="ajuste-option hover-scale" id="opt-modificar" onclick="selectAjusteTipo('modificar')">
+                        <strong>MODIFICAR SALDO INICIAL</strong>
+                        <p>Essa opção altera seu saldo inicial para reajustar seu saldo atual. Ao fazer isso, alguns de seus saldos do final do mês serão impactados.</p>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top:24px;">
+                    <div class="input-icon-wrapper" style="border:none;border-bottom:1px solid var(--border);border-radius:0;background:transparent;">
+                        <i data-lucide="file-text"></i>
+                        <input type="text" id="ajuste-desc" placeholder="Descrição">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="background:transparent;border-top:none;padding-top:0;">
+                <div class="footer-btns" style="width:100%;display:flex;justify-content:space-between;gap:16px;">
+                    <button class="btn-cancel-text" onclick="closeAjusteModal()" style="flex:1;text-align:left;">CANCELAR</button>
+                    <button class="btn-success" style="background:var(--accent);border-radius:100px;flex:1;" onclick="saveAjuste()">SALVAR</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popover Ações -->
+    <div id="acoes-popover" class="table-popover hidden">
+        <button class="popover-action-btn" id="btn-reajuste" onclick="openAjusteModalPopover()">
+            <i data-lucide="sliders"></i> Reajuste de saldo
+        </button>
+        <button class="popover-action-btn" id="btn-ver-transacoes" onclick="verTransacoesPopover()">
+            <i data-lucide="list"></i> Ver transações
+        </button>
+    </div>
+
+    <div id="toast-container" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:8px;"></div>
+    
+    <script src="theme.js"></script>
+    <script src="contas.js"></script>
+    <script>lucide.createIcons();</script>
+</body>
+</html>
